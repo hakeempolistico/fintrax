@@ -1,0 +1,154 @@
+import type {
+  Adapter,
+  ClientUploadsConfig,
+  GeneratedAdapter,
+} from '@payloadcms/plugin-cloud-storage/types'
+
+import { resolveSignedURLKey } from '@payloadcms/plugin-cloud-storage/utilities'
+import { generateClientTokenFromReadWriteToken } from '@vercel/blob/client'
+import { Forbidden } from 'payload'
+
+import { deleteFile } from './deleteFile.js'
+import { generateURL } from './generateURL.js'
+import { getFile } from './getFile.js'
+import { uploadFile } from './uploadFile.js'
+
+interface CreateVercelBlobAdapterArgs {
+  access: 'public'
+  addRandomSuffix?: boolean
+  baseUrl: string
+  cacheControlMaxAge: number
+  clientUploads?: ClientUploadsConfig
+  token: string
+  useCompositePrefixes?: boolean
+}
+
+export function createVercelBlobAdapter({
+  access,
+  addRandomSuffix,
+  baseUrl,
+  cacheControlMaxAge,
+  clientUploads,
+  token,
+  useCompositePrefixes = false,
+}: CreateVercelBlobAdapterArgs): Adapter {
+  const clientUploadsAccess = typeof clientUploads === 'object' ? clientUploads.access : undefined
+
+  return ({ collection, prefix = '' }): GeneratedAdapter => ({
+    name: 'vercel-blob',
+
+    uploadInstructions: {
+      adminHandler: {
+        path: '@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler',
+      },
+      enabled: Boolean(clientUploads),
+      generate: async ({
+        collectionSlug,
+        docPrefix,
+        filename,
+        filesize,
+        mimeType,
+        overrideAccess,
+        req,
+      }) => {
+        if (
+          !overrideAccess &&
+          (clientUploadsAccess ? !(await clientUploadsAccess({ collectionSlug, req })) : !req.user)
+        ) {
+          throw new Forbidden(req.t)
+        }
+
+        const resolved = await resolveSignedURLKey({
+          collectionPrefix: prefix,
+          collectionSlug,
+          docPrefix,
+          filename,
+          req,
+          useCompositePrefixes,
+        })
+
+        return {
+          name: 'uploadToVercelBlob',
+          type: 'dispatch',
+          data: {
+            pathname: resolved.fileKey,
+            token: await generateClientTokenFromReadWriteToken({
+              addRandomSuffix,
+              allowedContentTypes: mimeType ? [mimeType] : undefined,
+              allowOverwrite: true,
+              cacheControlMaxAge,
+              maximumSizeInBytes: filesize,
+              pathname: resolved.fileKey,
+              token,
+            }),
+          },
+          file: {
+            filename: resolved.sanitizedFilename,
+            mimeType,
+            size: filesize,
+            uploadReference: { prefix: resolved.sanitizedDocPrefix },
+          },
+        }
+      },
+      useInAdmin: true,
+    },
+
+    generateURL: ({ filename, prefix: urlPrefix = '' }) =>
+      generateURL({
+        baseUrl,
+        collectionPrefix: prefix,
+        filename,
+        prefix: urlPrefix,
+        useCompositePrefixes,
+      }),
+
+    handleDelete: ({ doc: { prefix: docPrefix = '' }, filename }) =>
+      deleteFile({
+        baseUrl,
+        collectionPrefix: prefix,
+        docPrefix,
+        filename,
+        token,
+        useCompositePrefixes,
+      }),
+
+    handleUpload: async ({ data, file: { buffer, filename, mimeType } }) => {
+      const result = await uploadFile({
+        access,
+        addRandomSuffix,
+        buffer,
+        cacheControlMaxAge,
+        collectionPrefix: prefix,
+        docPrefix: data.prefix,
+        filename,
+        mimeType,
+        token,
+        useCompositePrefixes,
+      })
+
+      if (result.filename) {
+        data.filename = result.filename
+      }
+
+      return data
+    },
+
+    staticHandler: (
+      req,
+      { headers, params: { filename, prefix: prefixQueryParam, uploadReference } },
+    ) =>
+      getFile({
+        baseUrl,
+        cacheControlMaxAge,
+        collection,
+        collectionPrefix: prefix,
+        filename,
+        incomingHeaders: headers,
+        prefixQueryParam,
+        req,
+        token,
+        uploadReference,
+        useCompositePrefixes,
+      }),
+  })
+}
