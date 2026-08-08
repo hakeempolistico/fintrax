@@ -10,11 +10,15 @@ const nextConfig: NextConfig = {
   images: {
     localPatterns: [
       {
-        pathname: '/api/media/file/**',
+        pathname: '/images/**',
       },
     ],
   },
   webpack: (webpackConfig) => {
+    webpackConfig.module.rules.push({
+      test: /\.svg$/,
+      use: ['@svgr/webpack'],
+    })
     webpackConfig.resolve.extensionAlias = {
       '.cjs': ['.cts', '.cjs'],
       '.js': ['.ts', '.tsx', '.js', '.jsx'],
@@ -25,6 +29,12 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     root: path.resolve(dirname),
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
   },
 }
 
