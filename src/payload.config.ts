@@ -9,6 +9,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Members } from './collections/Members'
 import { Accounts } from './collections/Accounts'
+import AICaptureEndpoint from './endpoints/aicapture.endpoint'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,4 +32,5 @@ export default buildConfig({
   }),
   sharp,
   plugins: [],
+  endpoints: [AICaptureEndpoint],
 })

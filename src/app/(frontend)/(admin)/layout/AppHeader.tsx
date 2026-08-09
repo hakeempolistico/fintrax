@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React, { useState, useEffect, useRef } from 'react'
 import UserDropdown from '../header/UserDropdown'
+import Button from '@/components/ui/button/Button'
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false)
@@ -81,13 +82,12 @@ const AppHeader: React.FC = () => {
             )}
             {/* Cross Icon */}
           </button>
-
           <Link href="/" className="lg:hidden">
             <Image
               width={154}
               height={32}
               className="dark:hidden"
-              src="./images/logo/logo.svg"
+              src="/images/logo/logo.svg"
               alt="Logo"
             />
             <Image

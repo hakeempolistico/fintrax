@@ -63,7 +63,7 @@ export default function AccountCard({ account }: InfoCardProps) {
         <h3 className="mb-1text-2xl font-semibold text-gray-900 dark:text-white">
           {account.name} | {account.accountNumber}
         </h3>
-        <p className="text-2xl font-bold tracking-tight text-success-600 dark:text-white">
+        <p className="text-xl font-bold tracking-tight text-success-600 dark:text-white">
           {formattedBalance}
         </p>
       </div>
