@@ -71,6 +71,7 @@ export interface Config {
     users: User;
     media: Media;
     members: Member;
+    accounts: Account;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,6 +82,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
+    accounts: AccountsSelect<false> | AccountsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -212,6 +214,33 @@ export interface Member {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "accounts".
+ */
+export interface Account {
+  id: string;
+  member: string | Member;
+  name: string;
+  accountNumber?: string | null;
+  source?: string | null;
+  type: 'bank' | 'cash' | 'credit-card' | 'e-wallet';
+  balance: number;
+  /**
+   * Additional account information.
+   */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -245,6 +274,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'members';
         value: string | Member;
+      } | null)
+    | ({
+        relationTo: 'accounts';
+        value: string | Account;
       } | null);
   globalSlug?: string | null;
   user:
@@ -362,6 +395,21 @@ export interface MembersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "accounts_select".
+ */
+export interface AccountsSelect<T extends boolean = true> {
+  member?: T;
+  name?: T;
+  accountNumber?: T;
+  source?: T;
+  type?: T;
+  balance?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
