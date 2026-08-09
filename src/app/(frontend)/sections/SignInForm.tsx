@@ -39,8 +39,7 @@ export default function SignInForm() {
       }
     }
 
-    console.log({ data })
-
+    // data.token then redirect
     window.location.href = '/portal'
   }
   return (
