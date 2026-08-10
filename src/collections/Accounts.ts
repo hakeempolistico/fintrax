@@ -20,6 +20,8 @@ export const Accounts: CollectionConfig = {
     {
       name: 'accountNumber',
       type: 'text',
+      required: true,
+      unique: true,
     },
     {
       name: 'source',

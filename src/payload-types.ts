@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     members: Member;
     accounts: Account;
+    bills: Bill;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -83,6 +84,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     members: MembersSelect<false> | MembersSelect<true>;
     accounts: AccountsSelect<false> | AccountsSelect<true>;
+    bills: BillsSelect<false> | BillsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -220,13 +222,51 @@ export interface Account {
   id: string;
   member: string | Member;
   name: string;
-  accountNumber?: string | null;
+  accountNumber: string;
   source?: string | null;
   type: 'bank' | 'cash' | 'credit-card' | 'e-wallet';
   balance: number;
   /**
    * Additional account information.
    */
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills".
+ */
+export interface Bill {
+  id: string;
+  member: string | Member;
+  provider: string;
+  customerAccountNumber: string;
+  billNumber?: string | null;
+  type:
+    | 'electricity'
+    | 'water'
+    | 'internet'
+    | 'mobile'
+    | 'telephone'
+    | 'insurance'
+    | 'credit-card'
+    | 'loan'
+    | 'government'
+    | 'other';
+  amountDue: number;
+  billingPeriodStart?: string | null;
+  billingPeriodEnd?: string | null;
+  dueDate?: string | null;
+  issueDate?: string | null;
   metadata?:
     | {
         [k: string]: unknown;
@@ -278,6 +318,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'accounts';
         value: string | Account;
+      } | null)
+    | ({
+        relationTo: 'bills';
+        value: string | Bill;
       } | null);
   globalSlug?: string | null;
   user:
@@ -407,6 +451,25 @@ export interface AccountsSelect<T extends boolean = true> {
   source?: T;
   type?: T;
   balance?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bills_select".
+ */
+export interface BillsSelect<T extends boolean = true> {
+  member?: T;
+  provider?: T;
+  customerAccountNumber?: T;
+  billNumber?: T;
+  type?: T;
+  amountDue?: T;
+  billingPeriodStart?: T;
+  billingPeriodEnd?: T;
+  dueDate?: T;
+  issueDate?: T;
   metadata?: T;
   updatedAt?: T;
   createdAt?: T;

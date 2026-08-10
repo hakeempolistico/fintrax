@@ -15,6 +15,15 @@ export const requireMember = async () => {
   }
 }
 
+export const getCurrentUser = async (): Promise<Member | null> => {
+  const payload = await getPayload({ config })
+  const { user } = await payload.auth({
+    headers: await headers(),
+  })
+
+  return user as Member
+}
+
 export const getMe = async (): Promise<Member> => {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({

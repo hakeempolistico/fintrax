@@ -51,19 +51,23 @@ export default function AccountCard({ account }: InfoCardProps) {
   }).format(account.balance)
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] grid grid-cols-12 gap-10">
-      <div className="col-span-3">
+    <div className="grid min-w-0 grid-cols-12 gap-10 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="col-span-3 min-w-0">
         <div className={`flex h-20 w-20 items-center justify-center rounded-2xl ${config.bgClass}`}>
           <Icon className={`h-9 w-9 ${config.iconClass}`} />
         </div>
       </div>
 
-      <div className="col-span-9">
-        <p className="mb-1text-sm font-medium text-gray-500 dark:text-gray-400">{account.source}</p>
-        <h3 className="mb-1text-2xl font-semibold text-gray-900 dark:text-white">
-          {account.name} | {account.accountNumber}
-        </h3>
-        <p className="text-xl font-bold tracking-tight text-success-600 dark:text-white">
+      <div className="col-span-9 min-w-0 max-w-full overflow-hidden">
+        <p className="break-all text-sm font-medium text-gray-500 dark:text-gray-400">
+          {account.source}
+        </p>
+
+        <h3 className="break-all text-md text-gray-900 dark:text-white">{account.name}</h3>
+
+        <h3 className="break-all text-md text-gray-900 dark:text-white">{account.accountNumber}</h3>
+
+        <p className="break-all text-xl font-bold tracking-tight text-success-600 dark:text-white">
           {formattedBalance}
         </p>
       </div>
