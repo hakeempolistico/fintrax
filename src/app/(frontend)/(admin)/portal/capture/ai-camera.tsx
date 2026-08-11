@@ -6,7 +6,6 @@ import { redirect } from 'next/navigation'
 
 export default function AiCamera() {
   const [isLoading, setIsLoading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleCapture = async (file: File) => {
     setIsLoading(true)
@@ -37,7 +36,7 @@ export default function AiCamera() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-semibold">Capture</h1>
+      <h1 className="mb-6 text-2xl font-semibold dark:text-white">Capture</h1>
 
       <div className="relative">
         <Camera onCapture={handleCapture} />
@@ -50,26 +49,6 @@ export default function AiCamera() {
             </div>
           </div>
         )}
-      </div>
-
-      <div className="mt-4 flex justify-center">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isLoading}
-          className="rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isLoading ? 'Processing...' : 'Upload Image'}
-        </button>
-
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleUpload}
-          disabled={isLoading}
-        />
       </div>
     </div>
   )

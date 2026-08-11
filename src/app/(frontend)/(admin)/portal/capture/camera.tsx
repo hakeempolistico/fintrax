@@ -1,5 +1,6 @@
 'use client'
 
+import Button from '@/components/ui/button/Button'
 import { useEffect, useRef, useState } from 'react'
 
 interface CameraProps {
@@ -104,21 +105,9 @@ export default function Camera({ onCapture }: CameraProps) {
 
       <div className="mt-4 flex justify-center gap-3">
         {capturedImage ? (
-          <button
-            type="button"
-            onClick={retake}
-            className="rounded-lg bg-gray-100 px-6 py-3 font-medium text-gray-900"
-          >
-            Retake
-          </button>
+          <Button onClick={retake}>Retake</Button>
         ) : (
-          <button
-            type="button"
-            onClick={capture}
-            className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white"
-          >
-            Capture
-          </button>
+          <Button onClick={capture}>Capture</Button>
         )}
       </div>
     </div>

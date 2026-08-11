@@ -1,5 +1,5 @@
 import AccountCard from '@/app/(frontend)/components/account-card'
-import FormInModal from '@/app/(frontend)/modals/FormInModal'
+import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import BasicTableOne from '@/app/(frontend)/tables/BasicTableOne'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -34,7 +34,7 @@ export default async function AccountsPage() {
           </div>
         </ComponentCard>
       </div>
-      <FormInModal me={me} collection="accounts"></FormInModal>
+      <ActionModals me={me} collection="accounts"></ActionModals>
     </div>
   )
 }

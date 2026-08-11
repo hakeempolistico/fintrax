@@ -1,5 +1,5 @@
 import AccountCard from '@/app/(frontend)/components/account-card'
-import FormInModal from '@/app/(frontend)/modals/FormInModal'
+import FormInModal from '@/app/(frontend)/modals/ActionModals'
 import BasicTableOne from '@/app/(frontend)/tables/BasicTableOne'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
