@@ -19,7 +19,7 @@ import {
 } from '../../../../icons/index'
 import SidebarWidget from './SidebarWidget'
 import { useSidebar } from '@/context/SidebarContext'
-import { CameraIcon } from 'lucide-react'
+import { CameraIcon, FileTextIcon } from 'lucide-react'
 
 type NavItem = {
   name: string
@@ -40,9 +40,9 @@ const navItems: NavItem[] = [
     path: '/portal/accounts',
   },
   {
-    icon: <CameraIcon />,
-    name: 'Capture',
-    path: '/portal/capture',
+    icon: <FileTextIcon />,
+    name: 'Bills',
+    path: '/portal/bills',
   },
 ]
 

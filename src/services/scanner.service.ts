@@ -17,7 +17,6 @@ export async function captureAIImage(req: any, image: File) {
     }
   }
 
-  console.log({ result })
   if (result.documentType === 'account') {
     if (!result.account) {
       const error = new Error('Claude returned account document without account data')

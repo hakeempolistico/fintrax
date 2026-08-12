@@ -1,8 +1,8 @@
-import { getPayload } from 'payload'
+import { CollectionSlug, getPayload, PaginatedDocs } from 'payload'
 import config from '@/payload.config'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Account, Member } from '@/payload-types'
+import { Account, Bill, Member } from '@/payload-types'
 
 export const requireMember = async () => {
   const payload = await getPayload({ config })
@@ -52,4 +52,24 @@ export const myAccounts = async (): Promise<Account[]> => {
   })
 
   return docs
+}
+
+export const myPaginatedCollection = async <T>(
+  collection: CollectionSlug,
+): Promise<PaginatedDocs<T>> => {
+  const me = await getMe()
+
+  const payload = await getPayload({ config })
+
+  const result = await payload.find({
+    collection,
+
+    where: {
+      member: {
+        equals: me.id,
+      },
+    },
+  })
+
+  return result as PaginatedDocs<T>
 }
