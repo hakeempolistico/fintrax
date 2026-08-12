@@ -6,7 +6,7 @@ import { Modal } from '../../../components/ui/modal'
 import { useModal } from '@/hooks/useModal'
 import { Camera, Plus, Upload } from 'lucide-react'
 import AiCamera from '../(admin)/portal/capture/ai-camera'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { redirect } from 'next/navigation'
 import { useSidebar } from '@/context/SidebarContext'
 
@@ -18,9 +18,14 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
   // Upload
   const fileInputRef = useRef<HTMLInputElement>(null)
   const Form = collection === 'accounts' ? AccountForm : null
+
+  const [isUploading, setIsUploading] = useState(false)
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsUploading(true)
     const file = e.target.files?.[0]
-    if (!file) return
+    if (!file) {
+      return setIsUploading(false)
+    }
 
     const formData = new FormData()
     formData.append('image', file)
@@ -37,6 +42,7 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
     if (data?.redirect) {
       redirect(data?.redirect)
     }
+    setIsUploading(false)
   }
 
   // Modals
@@ -66,9 +72,7 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
   }
 
   // Check if sidebar is open
-  const { isExpanded, isMobileOpen } = useSidebar()
-  console.log({ isExpanded, isMobileOpen })
-
+  const { isMobileOpen } = useSidebar()
   return (
     <>
       {!isMobileOpen && (
@@ -118,6 +122,48 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
           >
             <AiCamera />
           </Modal>
+        </div>
+      )}
+
+      {isUploading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/95 backdrop-blur-sm dark:bg-gray-950/95">
+          <div className="flex flex-col items-center justify-center px-6 text-center">
+            {/* Animated loader */}
+
+            <div className="relative flex h-24 w-24 items-center justify-center">
+              <div className="absolute inset-0 animate-ping rounded-full bg-brand-500/10" />
+
+              <div className="absolute inset-2 rounded-full border-4 border-brand-100 dark:border-brand-900/50" />
+
+              <div className="absolute inset-2 animate-spin rounded-full border-4 border-transparent border-t-brand-500 border-r-brand-500" />
+
+              <div className="h-10 w-10 rounded-full bg-brand-500/10 dark:bg-brand-500/20" />
+
+              <div className="h-3 w-3 animate-pulse rounded-full bg-brand-500" />
+            </div>
+
+            {/* Text */}
+
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Analyzing your document
+              </h2>
+
+              <p className="mt-2 max-w-sm text-sm text-gray-500 dark:text-gray-400">
+                We're reading the information from your image. This may take a moment.
+              </p>
+            </div>
+
+            {/* Progress dots */}
+
+            <div className="mt-6 flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-500 [animation-delay:-0.3s]" />
+
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-500 [animation-delay:-0.15s]" />
+
+              <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-brand-500" />
+            </div>
+          </div>
         </div>
       )}
     </>
