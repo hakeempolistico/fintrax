@@ -13,6 +13,11 @@ import {
   Landmark,
   Building2,
   CircleHelp,
+  UserRound,
+  House,
+  Car,
+  GraduationCap,
+  BriefcaseBusiness,
 } from 'lucide-react'
 import { FtColumn, FtRow } from './ft-table'
 
@@ -45,6 +50,13 @@ const FtBody = ({ columns, rows }: FtBodyProps) => {
                       {icon === 'credit-card' && <CreditCard className="h-5 w-5" />}
                       {icon === 'loan' && <Landmark className="h-5 w-5" />}
                       {icon === 'government' && <Building2 className="h-5 w-5" />}
+
+                      {icon === 'personal' && <UserRound className="h-5 w-5" />}
+                      {icon === 'home' && <House className="h-5 w-5" />}
+                      {icon === 'car' && <Car className="h-5 w-5" />}
+                      {icon === 'education' && <GraduationCap className="h-5 w-5" />}
+                      {icon === 'business' && <BriefcaseBusiness className="h-5 w-5" />}
+
                       {icon === 'other' && <CircleHelp className="h-5 w-5" />}
                       <div className="value">{value}</div>
                     </div>

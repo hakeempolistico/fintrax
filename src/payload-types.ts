@@ -73,6 +73,7 @@ export interface Config {
     members: Member;
     accounts: Account;
     bills: Bill;
+    loans: Loan;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -85,6 +86,7 @@ export interface Config {
     members: MembersSelect<false> | MembersSelect<true>;
     accounts: AccountsSelect<false> | AccountsSelect<true>;
     bills: BillsSelect<false> | BillsSelect<true>;
+    loans: LoansSelect<false> | LoansSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -281,6 +283,39 @@ export interface Bill {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loans".
+ */
+export interface Loan {
+  id: string;
+  member: string | User;
+  name: string;
+  lender: string;
+  loanType: 'personal' | 'home' | 'car' | 'education' | 'business' | 'credit-card' | 'other';
+  accountNumber?: string | null;
+  principalAmount: number;
+  outstandingBalance?: number | null;
+  interestRate?: number | null;
+  interestType?: ('fixed' | 'variable') | null;
+  monthlyPayment?: number | null;
+  paymentFrequency?: ('weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly') | null;
+  startDate: string;
+  endDate?: string | null;
+  status: 'active' | 'paid-off' | 'overdue' | 'defaulted';
+  notes?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -322,6 +357,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'bills';
         value: string | Bill;
+      } | null)
+    | ({
+        relationTo: 'loans';
+        value: string | Loan;
       } | null);
   globalSlug?: string | null;
   user:
@@ -470,6 +509,30 @@ export interface BillsSelect<T extends boolean = true> {
   billingPeriodEnd?: T;
   dueDate?: T;
   issueDate?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loans_select".
+ */
+export interface LoansSelect<T extends boolean = true> {
+  member?: T;
+  name?: T;
+  lender?: T;
+  loanType?: T;
+  accountNumber?: T;
+  principalAmount?: T;
+  outstandingBalance?: T;
+  interestRate?: T;
+  interestType?: T;
+  monthlyPayment?: T;
+  paymentFrequency?: T;
+  startDate?: T;
+  endDate?: T;
+  status?: T;
+  notes?: T;
   metadata?: T;
   updatedAt?: T;
   createdAt?: T;

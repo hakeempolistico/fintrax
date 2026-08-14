@@ -113,6 +113,11 @@ export type FtRow = {
       | 'loan'
       | 'government'
       | 'other'
+      | 'personal'
+      | 'home'
+      | 'car'
+      | 'education'
+      | 'business'
   }
 }
 export type FtTableProps = {

@@ -9,16 +9,28 @@ import AiCamera from '../(admin)/portal/capture/ai-camera'
 import { useRef, useState } from 'react'
 import { redirect } from 'next/navigation'
 import { useSidebar } from '@/context/SidebarContext'
+import LoanForm from '../(admin)/portal/loans/loan-form'
 
 type ActionModalsProps = {
-  collection: 'accounts' | 'transactions' | 'loans'
+  collection: 'accounts' | 'transactions' | 'loans' | 'bills'
   me: Member
 }
 export default function ActionModals({ me, collection }: ActionModalsProps) {
   // Upload
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const Form = collection === 'accounts' ? AccountForm : null
+  let Form = null
 
+  switch (collection) {
+    case 'accounts':
+      Form = AccountForm
+      break
+    case 'loans':
+      Form = LoanForm
+      break
+
+    default:
+      break
+  }
   const [isUploading, setIsUploading] = useState(false)
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsUploading(true)
@@ -46,29 +58,41 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
   }
 
   // Modals
-  const endpoint = collection === 'accounts' ? '/api/accounts' : '/'
+  let endpoint = null
+  switch (collection) {
+    case 'accounts':
+      endpoint = '/api/accounts'
+      break
+    case 'loans':
+      endpoint = '/api/loans'
+      break
+
+    default:
+      break
+  }
+
   const { isOpen, openModal, closeModal } = useModal()
   const scannerModal = useModal()
   const handleSave = async (data: any) => {
-    const response = await fetch(endpoint, {
-      method: 'POST',
+    if (endpoint) {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...data,
+          member: me.id,
+        }),
+      })
+      if (!response.ok) {
+        return false
+      }
 
-      headers: {
-        'Content-Type': 'application/json',
-      },
-
-      body: JSON.stringify({
-        ...data,
-
-        member: me.id,
-      }),
-    })
-
-    if (!response.ok) {
-      return false
+      return true
     }
 
-    return true
+    return false
   }
 
   // Check if sidebar is open
@@ -78,13 +102,15 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
       {!isMobileOpen && (
         <div>
           <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center justify-center gap-2 rounded-full bg-brand-50 p-3 dark:!bg-purple-600/10">
-            <Button
-              size="sm"
-              onClick={openModal}
-              className="!rounded-full !bg-brand-100 !text-brand-500 dark:!bg-purple-500 dark:!text-white"
-            >
-              <Plus className="h-5 w-5" />
-            </Button>
+            {Form && (
+              <Button
+                size="sm"
+                onClick={openModal}
+                className="!rounded-full !bg-brand-100 !text-brand-500 dark:!bg-purple-500 dark:!text-white"
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            )}
 
             <Button
               size="sm"

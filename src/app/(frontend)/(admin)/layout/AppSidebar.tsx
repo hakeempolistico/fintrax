@@ -3,23 +3,10 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
-  DollarLineIcon,
-  GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
-} from '../../../../icons/index'
+import { ChevronDownIcon, DollarLineIcon, GridIcon, HorizontaLDots } from '../../../../icons/index'
 import SidebarWidget from './SidebarWidget'
 import { useSidebar } from '@/context/SidebarContext'
-import { CameraIcon, FileTextIcon } from 'lucide-react'
+import { CameraIcon, FileTextIcon, LandmarkIcon } from 'lucide-react'
 
 type NavItem = {
   name: string
@@ -43,6 +30,11 @@ const navItems: NavItem[] = [
     icon: <FileTextIcon />,
     name: 'Bills',
     path: '/portal/bills',
+  },
+  {
+    icon: <LandmarkIcon />,
+    name: 'Loans',
+    path: '/portal/loans',
   },
 ]
 
