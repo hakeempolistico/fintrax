@@ -1,9 +1,9 @@
-import FtTable from '@/app/(frontend)/components/ft-table/ft-table'
+import FtTable, { FtColumn, FtRow } from '@/app/(frontend)/components/ft-table/ft-table'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { dateToReadable } from '@/helper/common.helper'
-import { Bill } from '@/payload-types'
+import { Account, Bill, Loan, Transaction } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
 
@@ -24,72 +24,63 @@ export default async function AccountsPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page ?? 1)
   const limit = Number(params.limit ?? 10)
-  const paginatedBills = await myPaginatedCollection<Bill>('bills', page, limit)
-  const bills = paginatedBills.docs
-  const { docs, ...pagination } = paginatedBills
 
-  // Rows
-  const rows = bills.map((bill) => ({
-    id: {
-      type: 'id' as const,
-      value: bill.id,
-    },
-
-    provider: {
-      type: 'icon-text' as const,
-      value: bill.provider ?? '-',
-      icon: bill.type ?? '-',
-    },
-    billingPeriod: {
-      type: 'text' as const,
-      value:
-        bill?.billingPeriodStart && bill?.billingPeriodEnd
-          ? dateToReadable(bill?.billingPeriodStart) +
-            ' - ' +
-            dateToReadable(bill?.billingPeriodEnd)
-          : '',
-    },
-
-    amount: {
-      type: 'text' as const,
-      value: `₱${(bill.amountDue ?? 0).toLocaleString('en-PH', {
-        minimumFractionDigits: 2,
-      })}`,
-    },
-    status: {
-      type: 'badge' as const,
-      value: 'Unpaid',
-      style: 'warning' as const,
-    },
-  }))
-
-  // Columns
-  const columns = [
+  const paginated = await myPaginatedCollection<Transaction>('transactions', page, limit)
+  const { docs, ...pagination } = paginated
+  const columns: FtColumn[] = [
     {
-      key: 'provider',
-      value: 'Provider',
-      width: '30%',
+      key: 'id',
+      value: 'ID',
     },
     {
-      key: 'billingPeriod',
-      value: 'Billing Period',
+      key: 'category',
+      value: 'Category',
     },
     {
       key: 'amount',
       value: 'Amount',
     },
     {
-      key: 'status',
-      value: 'Status',
+      key: 'date',
+      value: 'Date',
     },
   ]
+  const rows: FtRow[] = docs.map((transaction) => {
+    return {
+      id: {
+        type: 'text' as const,
+        value: transaction.id,
+      },
+
+      category: {
+        type: 'icon-text' as const,
+        value: transaction.category ?? 'other',
+        icon: transaction.type,
+      },
+
+      amount: {
+        type: 'text' as const,
+        value: String(transaction.amount),
+      },
+
+      date: {
+        type: 'text' as const,
+        value: dateToReadable(transaction.date),
+      },
+    }
+  })
+
+  const [{ docs: accounts }, { docs: bills }, { docs: loans }] = await Promise.all([
+    myPaginatedCollection<Account>('accounts', 1, 0),
+    myPaginatedCollection<Bill>('bills', 1, 0),
+    myPaginatedCollection<Loan>('loans', 1, 0),
+  ])
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Basic Table" />
       <div className="space-y-6">
         <ComponentCard title="Basic Table 1">
-          {/* <BasicTableOne /> */}
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12">
               <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable>
@@ -97,7 +88,13 @@ export default async function AccountsPage({ searchParams }: Props) {
           </div>
         </ComponentCard>
       </div>
-      <ActionModals me={me} collection="bills"></ActionModals>
+      <ActionModals
+        me={me}
+        collection="transactions"
+        bills={bills}
+        loans={loans}
+        accounts={accounts}
+      ></ActionModals>
     </div>
   )
 }

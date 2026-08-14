@@ -18,6 +18,10 @@ import {
   Car,
   GraduationCap,
   BriefcaseBusiness,
+  ArrowDownLeft,
+  Receipt,
+  ArrowUpRight,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { FtColumn, FtRow } from './ft-table'
 
@@ -50,13 +54,15 @@ const FtBody = ({ columns, rows }: FtBodyProps) => {
                       {icon === 'credit-card' && <CreditCard className="h-5 w-5" />}
                       {icon === 'loan' && <Landmark className="h-5 w-5" />}
                       {icon === 'government' && <Building2 className="h-5 w-5" />}
-
                       {icon === 'personal' && <UserRound className="h-5 w-5" />}
                       {icon === 'home' && <House className="h-5 w-5" />}
                       {icon === 'car' && <Car className="h-5 w-5" />}
                       {icon === 'education' && <GraduationCap className="h-5 w-5" />}
                       {icon === 'business' && <BriefcaseBusiness className="h-5 w-5" />}
-
+                      {icon === 'income' && <ArrowDownLeft className="h-5 w-5" />}
+                      {icon === 'payment' && <Receipt className="h-5 w-5" />}
+                      {icon === 'expense' && <ArrowUpRight className="h-5 w-5" />}
+                      {icon === 'transfer' && <ArrowLeftRight className="h-5 w-5" />}
                       {icon === 'other' && <CircleHelp className="h-5 w-5" />}
                       <div className="value">{value}</div>
                     </div>

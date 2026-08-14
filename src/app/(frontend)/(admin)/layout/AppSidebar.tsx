@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ChevronDownIcon, DollarLineIcon, GridIcon, HorizontaLDots } from '../../../../icons/index'
 import SidebarWidget from './SidebarWidget'
 import { useSidebar } from '@/context/SidebarContext'
-import { CameraIcon, FileTextIcon, LandmarkIcon } from 'lucide-react'
+import { ArrowLeftRightIcon, CameraIcon, FileTextIcon, LandmarkIcon } from 'lucide-react'
 
 type NavItem = {
   name: string
@@ -35,6 +35,11 @@ const navItems: NavItem[] = [
     icon: <LandmarkIcon />,
     name: 'Loans',
     path: '/portal/loans',
+  },
+  {
+    icon: <ArrowLeftRightIcon />,
+    name: 'Transactions',
+    path: '/portal/transactions',
   },
 ]
 

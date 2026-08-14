@@ -74,6 +74,7 @@ export interface Config {
     accounts: Account;
     bills: Bill;
     loans: Loan;
+    transactions: Transaction;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -87,6 +88,7 @@ export interface Config {
     accounts: AccountsSelect<false> | AccountsSelect<true>;
     bills: BillsSelect<false> | BillsSelect<true>;
     loans: LoansSelect<false> | LoansSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -316,6 +318,56 @@ export interface Loan {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: string;
+  member: string | User;
+  amount: number;
+  date: string;
+  type: 'income' | 'payment' | 'expense' | 'transfer';
+  source: 'account' | 'bill' | 'loan' | 'other';
+  account?: (string | null) | Account;
+  bill?: (string | null) | Bill;
+  loan?: (string | null) | Loan;
+  category?:
+    | (
+        | 'salary'
+        | 'food'
+        | 'transportation'
+        | 'shopping'
+        | 'utilities'
+        | 'rent'
+        | 'insurance'
+        | 'loan-payment'
+        | 'bill-payment'
+        | 'entertainment'
+        | 'healthcare'
+        | 'education'
+        | 'travel'
+        | 'other'
+      )
+    | null;
+  paymentMethod?: ('cash' | 'bank-transfer' | 'credit-card' | 'debit-card' | 'direct-debit' | 'other') | null;
+  /**
+   * Transaction reference, receipt number, or confirmation ID.
+   */
+  reference?: string | null;
+  notes?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -361,6 +413,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'loans';
         value: string | Loan;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: string | Transaction;
       } | null);
   globalSlug?: string | null;
   user:
@@ -532,6 +588,27 @@ export interface LoansSelect<T extends boolean = true> {
   startDate?: T;
   endDate?: T;
   status?: T;
+  notes?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  member?: T;
+  amount?: T;
+  date?: T;
+  type?: T;
+  source?: T;
+  account?: T;
+  bill?: T;
+  loan?: T;
+  category?: T;
+  paymentMethod?: T;
+  reference?: T;
   notes?: T;
   metadata?: T;
   updatedAt?: T;

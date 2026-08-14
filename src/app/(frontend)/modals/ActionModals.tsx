@@ -1,5 +1,5 @@
 'use client'
-import { Member } from '@/payload-types'
+import { Account, Bill, Loan, Member } from '@/payload-types'
 import AccountForm from '../(admin)/portal/accounts/account-form'
 import Button from '../../../components/ui/button/Button'
 import { Modal } from '../../../components/ui/modal'
@@ -10,24 +10,40 @@ import { useRef, useState } from 'react'
 import { redirect } from 'next/navigation'
 import { useSidebar } from '@/context/SidebarContext'
 import LoanForm from '../(admin)/portal/loans/loan-form'
+import TransactionForm from '../(admin)/portal/transactions/transaction-form'
 
 type ActionModalsProps = {
   collection: 'accounts' | 'transactions' | 'loans' | 'bills'
   me: Member
+  bills?: Bill[]
+  accounts?: Account[]
+  loans?: Loan[]
 }
-export default function ActionModals({ me, collection }: ActionModalsProps) {
+export default function ActionModals({
+  me,
+  collection,
+  bills,
+  accounts,
+  loans,
+}: ActionModalsProps) {
   // Upload
   const fileInputRef = useRef<HTMLInputElement>(null)
   let Form = null
+  let endpoint = null
 
   switch (collection) {
     case 'accounts':
       Form = AccountForm
+      endpoint = '/api/accounts'
       break
     case 'loans':
       Form = LoanForm
+      endpoint = '/api/loans'
       break
-
+    case 'transactions':
+      Form = TransactionForm
+      endpoint = '/api/transactions'
+      break
     default:
       break
   }
@@ -55,20 +71,6 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
       redirect(data?.redirect)
     }
     setIsUploading(false)
-  }
-
-  // Modals
-  let endpoint = null
-  switch (collection) {
-    case 'accounts':
-      endpoint = '/api/accounts'
-      break
-    case 'loans':
-      endpoint = '/api/loans'
-      break
-
-    default:
-      break
   }
 
   const { isOpen, openModal, closeModal } = useModal()
@@ -138,7 +140,15 @@ export default function ActionModals({ me, collection }: ActionModalsProps) {
           </div>
 
           <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[584px] p-5 lg:p-10">
-            {Form && <Form closeModal={closeModal} handleSave={handleSave} />}
+            {Form && (
+              <Form
+                closeModal={closeModal}
+                handleSave={handleSave}
+                bills={bills}
+                accounts={accounts}
+                loans={loans}
+              />
+            )}
           </Modal>
 
           <Modal
