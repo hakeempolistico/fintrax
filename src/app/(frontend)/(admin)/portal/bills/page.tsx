@@ -1,4 +1,4 @@
-import FtTable from '@/app/(frontend)/components/ft-table'
+import FtTable from '@/app/(frontend)/components/ft-table/ft-table'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
