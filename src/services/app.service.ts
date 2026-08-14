@@ -56,14 +56,15 @@ export const myAccounts = async (): Promise<Account[]> => {
 
 export const myPaginatedCollection = async <T>(
   collection: CollectionSlug,
+  page = 1,
+  limit = 10,
 ): Promise<PaginatedDocs<T>> => {
   const me = await getMe()
-
   const payload = await getPayload({ config })
-
   const result = await payload.find({
     collection,
-
+    page,
+    limit,
     where: {
       member: {
         equals: me.id,

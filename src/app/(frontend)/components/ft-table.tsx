@@ -4,6 +4,22 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../../com
 import Badge from '../../../components/ui/badge/Badge'
 import Image from 'next/image'
 import Pagination from '../tables/Pagination'
+import { generateKey } from '@/helper/common.helper'
+import {
+  Zap,
+  Droplets,
+  Wifi,
+  Smartphone,
+  Phone,
+  ShieldCheck,
+  CreditCard,
+  Landmark,
+  Building2,
+  CircleHelp,
+} from 'lucide-react'
+import { PaginatedDocs } from 'payload'
+import FtPagination from './ft-pagination'
+import { useRouter } from 'next/navigation'
 
 interface Order {
   id: number
@@ -96,17 +112,29 @@ const tableData: Order[] = [
 
 export type FtTableProps = {
   columns: { key: string; value: string; width?: string }[]
-
   rows: {
     [key: string]: {
-      type: 'text' | 'two-row' | 'badge' | 'id'
+      type: 'text' | 'two-row' | 'badge' | 'id' | 'icon-text'
       value: string
       subValue?: string
       style?: 'success' | 'warning' | 'error'
+      icon?:
+        | 'electricity'
+        | 'water'
+        | 'internet'
+        | 'mobile'
+        | 'telephone'
+        | 'insurance'
+        | 'credit-card'
+        | 'loan'
+        | 'government'
+        | 'other'
     }
   }[]
+  pagination?: Omit<PaginatedDocs<unknown>, 'docs'>
 }
-export default function FtTable({ columns, rows }: FtTableProps) {
+export default function FtTable({ columns, rows, pagination }: FtTableProps) {
+  const router = useRouter()
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
       <div className="max-w-full overflow-x-auto">
@@ -133,12 +161,30 @@ export default function FtTable({ columns, rows }: FtTableProps) {
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {rows.map((row) => {
                 return (
-                  <TableRow key={''}>
+                  <TableRow key={generateKey()}>
                     {columns.map((col) => {
-                      const { type, value, subValue, style } = row[col.key]
+                      const { type, value, subValue, style, icon } = row[col.key]
                       return (
-                        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                        <TableCell
+                          key={generateKey()}
+                          className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400"
+                        >
                           {type === 'text' && value}
+                          {type === 'icon-text' && (
+                            <div className="flex items-center gap-2">
+                              {icon === 'electricity' && <Zap className="h-5 w-5" />}
+                              {icon === 'water' && <Droplets className="h-5 w-5" />}
+                              {icon === 'internet' && <Wifi className="h-5 w-5" />}
+                              {icon === 'mobile' && <Smartphone className="h-5 w-5" />}
+                              {icon === 'telephone' && <Phone className="h-5 w-5" />}
+                              {icon === 'insurance' && <ShieldCheck className="h-5 w-5" />}
+                              {icon === 'credit-card' && <CreditCard className="h-5 w-5" />}
+                              {icon === 'loan' && <Landmark className="h-5 w-5" />}
+                              {icon === 'government' && <Building2 className="h-5 w-5" />}
+                              {icon === 'other' && <CircleHelp className="h-5 w-5" />}
+                              <div className="value">{value}</div>
+                            </div>
+                          )}
                           {type === 'two-row' && (
                             <div className="flex items-center">
                               <div>
@@ -166,9 +212,15 @@ export default function FtTable({ columns, rows }: FtTableProps) {
           </Table>
         </div>
       </div>
-      <div className="flex justify-end p-3">
-        <Pagination currentPage={1} totalPages={100} onPageChange={() => {}}></Pagination>
-      </div>
+      {pagination && (
+        <div className="flex justify-end p-3">
+          <FtPagination
+            currentPage={pagination?.page ?? 1}
+            totalPages={pagination?.totalPages}
+            onPageChange={(page) => router.push(`?page=${page}&limit=10`)}
+          ></FtPagination>
+        </div>
+      )}
     </div>
   )
 }

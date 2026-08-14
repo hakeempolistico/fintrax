@@ -1,8 +1,8 @@
 import FtTable from '@/app/(frontend)/components/ft-table'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
-import BasicTableOne from '@/app/(frontend)/tables/BasicTableOne'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
+import { dateToReadable } from '@/helper/common.helper'
 import { Bill } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
@@ -13,10 +13,20 @@ export const metadata: Metadata = {
     'This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template',
   // other metadata
 }
-export default async function AccountsPage() {
+type Props = {
+  searchParams: Promise<{
+    page?: string
+    limit?: string
+  }>
+}
+export default async function AccountsPage({ searchParams }: Props) {
   const me = await getMe()
-  const paginatedBills = await myPaginatedCollection<Bill>('bills')
+  const params = await searchParams
+  const page = Number(params.page ?? 1)
+  const limit = Number(params.limit ?? 10)
+  const paginatedBills = await myPaginatedCollection<Bill>('bills', page, limit)
   const bills = paginatedBills.docs
+  const { docs, ...pagination } = paginatedBills
 
   // Rows
   const rows = bills.map((bill) => ({
@@ -26,14 +36,18 @@ export default async function AccountsPage() {
     },
 
     provider: {
-      type: 'two-row' as const,
+      type: 'icon-text' as const,
       value: bill.provider ?? '-',
-      subValue: bill.type ?? '-',
+      icon: bill.type ?? '-',
     },
-
-    customerAccountNumber: {
+    billingPeriod: {
       type: 'text' as const,
-      value: bill.customerAccountNumber ?? '-',
+      value:
+        bill?.billingPeriodStart && bill?.billingPeriodEnd
+          ? dateToReadable(bill?.billingPeriodStart) +
+            ' - ' +
+            dateToReadable(bill?.billingPeriodEnd)
+          : '',
     },
 
     amount: {
@@ -49,6 +63,7 @@ export default async function AccountsPage() {
     },
   }))
 
+  // Columns
   const columns = [
     {
       key: 'provider',
@@ -56,8 +71,8 @@ export default async function AccountsPage() {
       width: '30%',
     },
     {
-      key: 'customerAccountNumber',
-      value: 'CAN',
+      key: 'billingPeriod',
+      value: 'Billing Period',
     },
     {
       key: 'amount',
@@ -77,7 +92,7 @@ export default async function AccountsPage() {
           {/* <BasicTableOne /> */}
           <div className="grid grid-cols-12 gap-6">
             <div className="col-span-12">
-              <FtTable columns={columns} rows={rows}></FtTable>
+              <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable>
             </div>
           </div>
         </ComponentCard>
