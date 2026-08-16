@@ -280,39 +280,7 @@ export interface Bill {
     | number
     | boolean
     | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "loans".
- */
-export interface Loan {
-  id: string;
-  member: string | User;
-  name: string;
-  lender: string;
-  loanType: 'personal' | 'home' | 'car' | 'education' | 'business' | 'credit-card' | 'other';
-  accountNumber?: string | null;
-  principalAmount: number;
-  outstandingBalance?: number | null;
-  interestRate?: number | null;
-  interestType?: ('fixed' | 'variable') | null;
-  monthlyPayment?: number | null;
-  paymentFrequency?: ('weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly') | null;
-  startDate: string;
-  endDate?: string | null;
-  status: 'active' | 'paid-off' | 'overdue' | 'defaulted';
-  notes?: string | null;
-  metadata?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  transactions?: (string | Transaction)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -353,6 +321,39 @@ export interface Transaction {
    * Transaction reference, receipt number, or confirmation ID.
    */
   reference?: string | null;
+  notes?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loans".
+ */
+export interface Loan {
+  id: string;
+  member: string | User;
+  name: string;
+  lender: string;
+  loanType: 'personal' | 'home' | 'car' | 'education' | 'business' | 'credit-card' | 'other';
+  accountNumber?: string | null;
+  principalAmount: number;
+  outstandingBalance?: number | null;
+  interestRate?: number | null;
+  interestType?: ('fixed' | 'variable') | null;
+  monthlyPayment?: number | null;
+  paymentFrequency?: ('weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly') | null;
+  startDate: string;
+  endDate?: string | null;
+  status: 'active' | 'paid-off' | 'overdue' | 'defaulted';
   notes?: string | null;
   metadata?:
     | {
@@ -566,6 +567,7 @@ export interface BillsSelect<T extends boolean = true> {
   dueDate?: T;
   issueDate?: T;
   metadata?: T;
+  transactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -107,5 +107,11 @@ export const Bills: CollectionConfig = {
       name: 'metadata',
       type: 'json',
     },
+    {
+      name: 'transactions',
+      type: 'relationship',
+      relationTo: 'transactions',
+      hasMany: true,
+    },
   ],
 }

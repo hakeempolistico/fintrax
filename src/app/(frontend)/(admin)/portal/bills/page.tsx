@@ -24,7 +24,13 @@ export default async function AccountsPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page ?? 1)
   const limit = Number(params.limit ?? 10)
-  const paginatedBills = await myPaginatedCollection<Bill>('bills', page, limit)
+  const paginatedBills = await myPaginatedCollection<Bill>('bills', page, limit, [
+    {
+      name: 'transactions',
+      collection: 'transactions',
+      foreignKey: 'bill',
+    },
+  ])
   const bills = paginatedBills.docs
   const { docs, ...pagination } = paginatedBills
 
@@ -34,7 +40,6 @@ export default async function AccountsPage({ searchParams }: Props) {
       type: 'id' as const,
       value: bill.id,
     },
-
     provider: {
       type: 'icon-text' as const,
       value: bill.provider ?? '-',
@@ -49,7 +54,6 @@ export default async function AccountsPage({ searchParams }: Props) {
             dateToReadable(bill?.billingPeriodEnd)
           : '',
     },
-
     amount: {
       type: 'text' as const,
       value: `₱${(bill.amountDue ?? 0).toLocaleString('en-PH', {
@@ -58,8 +62,8 @@ export default async function AccountsPage({ searchParams }: Props) {
     },
     status: {
       type: 'badge' as const,
-      value: 'Unpaid',
-      style: 'warning' as const,
+      value: (bill.transactions?.length ?? 0) > 0 ? 'PAID' : 'UNPAID',
+      style: (bill.transactions?.length ?? 0) > 0 ? ('success' as const) : ('warning' as const),
     },
   }))
 

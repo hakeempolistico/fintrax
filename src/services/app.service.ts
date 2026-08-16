@@ -58,9 +58,11 @@ export const myPaginatedCollection = async <T>(
   collection: CollectionSlug,
   page = 1,
   limit = 10,
+  relationships: RelationshipConfig[] = [],
 ): Promise<PaginatedDocs<T>> => {
   const me = await getMe()
   const payload = await getPayload({ config })
+
   const result = await payload.find({
     collection,
     page,
@@ -72,5 +74,50 @@ export const myPaginatedCollection = async <T>(
     },
   })
 
-  return result as PaginatedDocs<T>
+  if (relationships.length === 0) {
+    return result as PaginatedDocs<T>
+  }
+
+  const docs = await attachRelationships(result.docs, relationships)
+
+  return {
+    ...result,
+    docs,
+  } as PaginatedDocs<T>
+}
+
+type RelationshipConfig = {
+  name: string
+  collection: CollectionSlug
+  foreignKey: string
+}
+
+export const attachRelationships = async <T>(
+  docs: T[],
+  relationships: RelationshipConfig[],
+): Promise<T[]> => {
+  const payload = await getPayload({ config })
+
+  return Promise.all(
+    docs.map(async (doc) => {
+      const updatedDoc = {
+        ...(doc as object),
+      } as Record<string, unknown>
+
+      for (const relationship of relationships) {
+        const related = await payload.find({
+          collection: relationship.collection,
+          where: {
+            [relationship.foreignKey]: {
+              equals: (doc as { id: string }).id,
+            },
+          },
+          pagination: false,
+        })
+        updatedDoc[relationship.name] = related.docs
+      }
+
+      return updatedDoc as T
+    }),
+  )
 }
