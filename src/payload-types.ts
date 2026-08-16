@@ -364,6 +364,7 @@ export interface Loan {
     | number
     | boolean
     | null;
+  transactions?: (string | Transaction)[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -592,6 +593,7 @@ export interface LoansSelect<T extends boolean = true> {
   status?: T;
   notes?: T;
   metadata?: T;
+  transactions?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -184,5 +184,11 @@ export const Loans: CollectionConfig = {
       name: 'metadata',
       type: 'json',
     },
+    {
+      name: 'transactions',
+      type: 'relationship',
+      relationTo: 'transactions',
+      hasMany: true,
+    },
   ],
 }

@@ -9,3 +9,10 @@ export const dateToReadable = (date: string) => {
     year: 'numeric',
   })
 }
+
+export const formatAmount = (amount: number | string | null | undefined): string => {
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+  }).format(Number(amount ?? 0))
+}

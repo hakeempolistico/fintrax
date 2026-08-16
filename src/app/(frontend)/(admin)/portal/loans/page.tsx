@@ -2,7 +2,7 @@ import FtTable from '@/app/(frontend)/components/ft-table/ft-table'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { dateToReadable } from '@/helper/common.helper'
+import { dateToReadable, formatAmount } from '@/helper/common.helper'
 import { Bill, Loan } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
@@ -24,7 +24,13 @@ export default async function AccountsPage({ searchParams }: Props) {
   const params = await searchParams
   const page = Number(params.page ?? 1)
   const limit = Number(params.limit ?? 10)
-  const paginated = await myPaginatedCollection<Loan>('loans', page, limit)
+  const paginated = await myPaginatedCollection<Loan>('loans', page, limit, [
+    {
+      name: 'transactions',
+      collection: 'transactions',
+      foreignKey: 'loan',
+    },
+  ])
   const { docs, ...pagination } = paginated
   const columns = [
     {
@@ -34,6 +40,14 @@ export default async function AccountsPage({ searchParams }: Props) {
     {
       key: 'lender',
       value: 'Lender',
+    },
+    {
+      key: 'principalAmount',
+      value: 'Principal Amount',
+    },
+    {
+      key: 'totalPaid',
+      value: 'Total Paid',
     },
     {
       key: 'status',
@@ -66,6 +80,20 @@ export default async function AccountsPage({ searchParams }: Props) {
       lender: {
         type: 'text' as const,
         value: loan.lender,
+      },
+      principalAmount: {
+        type: 'text' as const,
+        value: formatAmount(loan.principalAmount).toString(),
+      },
+      totalPaid: {
+        type: 'text' as const,
+        value: formatAmount(
+          loan.transactions?.reduce(
+            (total, transaction) =>
+              total + (typeof transaction === 'string' ? 0 : Number(transaction.amount || 0)),
+            0,
+          ) ?? 0,
+        ).toString(),
       },
       status: {
         type: 'badge' as const,

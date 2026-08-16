@@ -2,7 +2,7 @@ import FtTable, { FtColumn, FtRow } from '@/app/(frontend)/components/ft-table/f
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { dateToReadable } from '@/helper/common.helper'
+import { dateToReadable, formatAmount } from '@/helper/common.helper'
 import { Account, Bill, Loan, Transaction } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
@@ -60,7 +60,7 @@ export default async function AccountsPage({ searchParams }: Props) {
 
       amount: {
         type: 'text' as const,
-        value: String(transaction.amount),
+        value: String(formatAmount(transaction.amount)),
       },
 
       date: {
