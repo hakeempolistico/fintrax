@@ -64,6 +64,28 @@ const FtBody = ({ columns, rows }: FtBodyProps) => {
                       {icon === 'expense' && <ArrowUpRight className="h-5 w-5" />}
                       {icon === 'transfer' && <ArrowLeftRight className="h-5 w-5" />}
                       {icon === 'other' && <CircleHelp className="h-5 w-5" />}
+
+                      {value === 'Meralco' && (
+                        <img
+                          src={`/images/logo/meralco.png`}
+                          alt={`${value} logo`}
+                          className="h-5 w-5 object-contain"
+                        />
+                      )}
+                      {value === 'Spotify' && (
+                        <img
+                          src={`/images/logo/spotify.png`}
+                          alt={`${value} logo`}
+                          className="h-5 w-5 object-contain"
+                        />
+                      )}
+                      {value === 'Converge' && (
+                        <img
+                          src={`/images/logo/converge.png`}
+                          alt={`${value} logo`}
+                          className="h-5 w-5 object-contain"
+                        />
+                      )}
                       <div className="value">{value}</div>
                     </div>
                   )}

@@ -11,6 +11,7 @@ import { redirect } from 'next/navigation'
 import { useSidebar } from '@/context/SidebarContext'
 import LoanForm from '../(admin)/portal/loans/loan-form'
 import TransactionForm from '../(admin)/portal/transactions/transaction-form'
+import BillForm from '../(admin)/portal/bills/bill-form'
 
 type ActionModalsProps = {
   collection: 'accounts' | 'transactions' | 'loans' | 'bills'
@@ -39,6 +40,10 @@ export default function ActionModals({
     case 'loans':
       Form = LoanForm
       endpoint = '/api/loans'
+      break
+    case 'bills':
+      Form = BillForm
+      endpoint = '/api/bills'
       break
     case 'transactions':
       Form = TransactionForm
@@ -87,7 +92,9 @@ export default function ActionModals({
           member: me.id,
         }),
       })
+      const result = await response.json()
       if (!response.ok) {
+        alert(`${result?.errors?.[0]?.name}: ${result?.errors?.[0]?.message}`)
         return false
       }
 

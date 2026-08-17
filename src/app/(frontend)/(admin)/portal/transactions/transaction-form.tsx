@@ -170,7 +170,7 @@ const TransactionForm = ({
               key="transaction-bill"
               options={bills.map((bill) => ({
                 value: bill.id,
-                label: `${bill.type} - ${bill.billNumber ?? bill.issueDate} : ${bill.amountDue}`,
+                label: `${bill.provider}`,
               }))}
               placeholder="Select bill"
               onChange={(value) => {
@@ -180,6 +180,22 @@ const TransactionForm = ({
                 })
               }}
             />
+          </div>
+        )}
+        {data.source === 'bill' && (
+          <div>
+            <Label>Payment For</Label>
+            <Input
+              type="month"
+              name="billPaymentFor"
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  billPaymentFor: e.target.value ? `${e.target.value}-01` : undefined,
+                })
+              }
+            />
+            <p className="mt-1 text-xs text-gray-500">Select the month this payment is for.</p>
           </div>
         )}
 

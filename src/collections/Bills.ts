@@ -2,12 +2,10 @@ import type { CollectionConfig } from 'payload'
 
 export const Bills: CollectionConfig = {
   slug: 'bills',
-
   admin: {
     useAsTitle: 'provider',
     defaultColumns: ['provider', 'customerAccountNumber', 'amountDue', 'dueDate'],
   },
-
   fields: [
     {
       name: 'member',
@@ -28,12 +26,7 @@ export const Bills: CollectionConfig = {
       index: true,
     },
     {
-      name: 'billNumber',
-      type: 'text',
-      index: true,
-    },
-    {
-      name: 'type',
+      name: 'category',
       type: 'select',
       required: true,
       options: [
@@ -79,29 +72,48 @@ export const Bills: CollectionConfig = {
         },
       ],
     },
-    // Amount
     {
-      name: 'amountDue',
+      name: 'type',
+      type: 'select',
+      options: [
+        {
+          label: 'Subscription',
+          value: 'subscription',
+        },
+        {
+          label: 'Variable',
+          value: 'variable',
+        },
+      ],
+      defaultValue: 'subscription',
+      required: true,
+    },
+    {
+      name: 'amount',
       type: 'number',
       required: true,
       min: 0,
+      admin: {
+        condition: (_, siblingData) => siblingData?.billingType === 'subscription',
+      },
     },
-    // Billing period
     {
       name: 'billingPeriodStart',
-      type: 'date',
+      type: 'number',
+      min: 1,
+      max: 31,
     },
     {
       name: 'billingPeriodEnd',
-      type: 'date',
+      type: 'number',
+      min: 1,
+      max: 31,
     },
     {
       name: 'dueDate',
-      type: 'date',
-    },
-    {
-      name: 'issueDate',
-      type: 'date',
+      type: 'number',
+      min: 1,
+      max: 31,
     },
     {
       name: 'metadata',

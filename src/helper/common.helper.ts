@@ -16,3 +16,8 @@ export const formatAmount = (amount: number | string | null | undefined): string
     currency: 'PHP',
   }).format(Number(amount ?? 0))
 }
+
+export const getDateByDate = (date: number) => {
+  const today = new Date()
+  return new Date(today.getFullYear(), today.getMonth(), date)
+}

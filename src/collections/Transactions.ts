@@ -29,8 +29,6 @@ export const Transactions: CollectionConfig = {
       required: true,
       label: 'Transaction Date',
     },
-
-    // Money movement
     {
       name: 'type',
       type: 'select',
@@ -54,8 +52,6 @@ export const Transactions: CollectionConfig = {
         },
       ],
     },
-
-    // What the transaction is related to
     {
       name: 'source',
       type: 'select',
@@ -79,8 +75,6 @@ export const Transactions: CollectionConfig = {
         },
       ],
     },
-
-    // Account relationship
     {
       name: 'account',
       type: 'relationship',
@@ -90,8 +84,6 @@ export const Transactions: CollectionConfig = {
         condition: (_, siblingData) => siblingData?.source === 'account',
       },
     },
-
-    // Bill relationship
     {
       name: 'bill',
       type: 'relationship',
@@ -101,8 +93,18 @@ export const Transactions: CollectionConfig = {
         condition: (_, siblingData) => siblingData?.source === 'bill',
       },
     },
-
-    // Loan relationship
+    {
+      name: 'billPaymentFor',
+      type: 'date',
+      label: 'Payment For',
+      admin: {
+        condition: (_, siblingData) => siblingData?.source === 'bill',
+        date: {
+          pickerAppearance: 'monthOnly',
+        },
+        description: 'The billing month this payment is for.',
+      },
+    },
     {
       name: 'loan',
       type: 'relationship',

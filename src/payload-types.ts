@@ -254,8 +254,7 @@ export interface Bill {
   member: string | Member;
   provider: string;
   customerAccountNumber: string;
-  billNumber?: string | null;
-  type:
+  category:
     | 'electricity'
     | 'water'
     | 'internet'
@@ -266,11 +265,11 @@ export interface Bill {
     | 'loan'
     | 'government'
     | 'other';
-  amountDue: number;
-  billingPeriodStart?: string | null;
-  billingPeriodEnd?: string | null;
-  dueDate?: string | null;
-  issueDate?: string | null;
+  type: 'subscription' | 'variable';
+  amount?: number | null;
+  billingPeriodStart?: number | null;
+  billingPeriodEnd?: number | null;
+  dueDate?: number | null;
   metadata?:
     | {
         [k: string]: unknown;
@@ -297,6 +296,10 @@ export interface Transaction {
   source: 'account' | 'bill' | 'loan' | 'other';
   account?: (string | null) | Account;
   bill?: (string | null) | Bill;
+  /**
+   * The billing month this payment is for.
+   */
+  billPaymentFor?: string | null;
   loan?: (string | null) | Loan;
   category?:
     | (
@@ -560,13 +563,12 @@ export interface BillsSelect<T extends boolean = true> {
   member?: T;
   provider?: T;
   customerAccountNumber?: T;
-  billNumber?: T;
+  category?: T;
   type?: T;
-  amountDue?: T;
+  amount?: T;
   billingPeriodStart?: T;
   billingPeriodEnd?: T;
   dueDate?: T;
-  issueDate?: T;
   metadata?: T;
   transactions?: T;
   updatedAt?: T;
@@ -609,6 +611,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   source?: T;
   account?: T;
   bill?: T;
+  billPaymentFor?: T;
   loan?: T;
   category?: T;
   paymentMethod?: T;
