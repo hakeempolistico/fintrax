@@ -2,11 +2,9 @@ import type { CollectionConfig } from 'payload'
 
 export const Transactions: CollectionConfig = {
   slug: 'transactions',
-
   admin: {
     defaultColumns: ['date', 'type', 'category', 'amount', 'account'],
   },
-
   fields: [
     // Owner
     {
@@ -232,4 +230,27 @@ export const Transactions: CollectionConfig = {
       type: 'json',
     },
   ],
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        if (operation === 'create' && data.source === 'loan' && data.loan) {
+          const loanId = typeof data.loan === 'object' ? data.loan.id : data.loan
+          if (loanId) {
+            const loan = await req.payload.findByID({
+              collection: 'loans',
+              id: loanId,
+            })
+            await req.payload.update({
+              collection: 'loans',
+              id: loanId,
+              data: {
+                termsPaid: (loan.termsPaid ?? 0) + 1,
+              },
+            })
+          }
+        }
+        return data
+      },
+    ],
+  },
 }

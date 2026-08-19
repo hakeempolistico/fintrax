@@ -3,7 +3,7 @@ import FtTable from '@/app/(frontend)/components/ft-table/ft-table'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { dateToReadable, getDateByDate } from '@/helper/common.helper'
+import { dateToReadable, formatAmount, getDateByDate } from '@/helper/common.helper'
 import { Bill } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
@@ -38,22 +38,23 @@ export default async function AccountsPage({ searchParams }: Props) {
   const unpaidCount = rows.filter((row) => row.status.value === 'UNPAID').length
   const paidCount = rows.filter((row) => row.status.value === 'PAID').length
   const overdueCount = rows.filter((row) => row.status.value === 'OVERDUE').length
+  const totalAmount = docs.reduce((total, doc) => total + (doc.amount ?? 0), 0)
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Bills" />
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
         <FtDashboardCard
+          label="Total Monthly"
+          number={formatAmount(totalAmount)}
+          className="!text-gray-500"
+        />
+        <FtDashboardCard
           label="Total Bills"
           number={pagination.totalDocs.toString()}
           className="!text-brand-500"
         />
         <FtDashboardCard label="Paid" number={paidCount.toString()} className="text-success-500" />
-        <FtDashboardCard
-          label="Unpaid"
-          number={unpaidCount.toString()}
-          className="!text-gray-500"
-        />
         <FtDashboardCard
           label="Overdue"
           number={overdueCount.toString()}
