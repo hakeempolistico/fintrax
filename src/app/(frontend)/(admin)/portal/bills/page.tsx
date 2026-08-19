@@ -32,86 +32,33 @@ export default async function AccountsPage({ searchParams }: Props) {
       foreignKey: 'bill',
     },
   ])
-  const bills = paginatedBills.docs
   const { docs, ...pagination } = paginatedBills
-
-  // Columns
-  const columns = [
-    {
-      key: 'provider',
-      value: 'Provider',
-      width: '30%',
-    },
-    {
-      key: 'amount',
-      value: 'Amount',
-    },
-    {
-      key: 'dueDate',
-      value: 'Due Date',
-    },
-    {
-      key: 'billingMonth',
-      value: 'Billing Month',
-    },
-    {
-      key: 'status',
-      value: 'Status',
-    },
-  ]
-
-  // Rows
-  const rows = bills.map((bill) => {
-    const status = getBillStatus(bill)
-
-    return {
-      id: {
-        type: 'id' as const,
-        value: bill.id,
-      },
-      provider: {
-        type: 'icon-text' as const,
-        value: bill.provider ?? '-',
-      },
-      amount: {
-        type: 'text' as const,
-        value:
-          bill.amount !== undefined && bill.amount !== null
-            ? `₱${bill.amount.toLocaleString('en-PH', {
-                minimumFractionDigits: 2,
-              })}`
-            : '-',
-      },
-      dueDate: {
-        type: 'text' as const,
-        value: bill.dueDate
-          ? getDateByDate(bill.dueDate).toLocaleDateString('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            })
-          : '-',
-      },
-      billingMonth: {
-        type: 'text' as const,
-        value: getBillingMonth(),
-      },
-      status: {
-        type: 'badge' as const,
-        value: status.value,
-        style: status.style,
-      },
-    }
-  })
+  const columns = getColumns
+  const rows = getRows(docs)
+  const unpaidCount = rows.filter((row) => row.status.value === 'UNPAID').length
+  const paidCount = rows.filter((row) => row.status.value === 'PAID').length
+  const overdueCount = rows.filter((row) => row.status.value === 'OVERDUE').length
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Bills" />
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard label="Total Bills" number="24" className="text-success-500" />
-        <FtDashboardCard label="Unpaid" number="12" className="!text-brand-500" />
-        <FtDashboardCard label="Due Soon" number="5" className="!text-gray-500" />
-        <FtDashboardCard label="Overdue" number="2" className="!text-warning-500" />
+        <FtDashboardCard
+          label="Total Bills"
+          number={pagination.totalDocs.toString()}
+          className="!text-brand-500"
+        />
+        <FtDashboardCard label="Paid" number={paidCount.toString()} className="text-success-500" />
+        <FtDashboardCard
+          label="Unpaid"
+          number={unpaidCount.toString()}
+          className="!text-gray-500"
+        />
+        <FtDashboardCard
+          label="Overdue"
+          number={overdueCount.toString()}
+          className="!text-warning-500"
+        />
       </div>
       <div className="space-y-6">
         <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable>
@@ -269,4 +216,73 @@ const getBillStatus = (bill: Bill) => {
     value: 'OVERDUE',
     style: 'error' as const,
   }
+}
+
+const getColumns = [
+  {
+    key: 'provider',
+    value: 'Provider',
+    width: '30%',
+  },
+  {
+    key: 'amount',
+    value: 'Amount',
+  },
+  {
+    key: 'dueDate',
+    value: 'Due Date',
+  },
+  {
+    key: 'billingMonth',
+    value: 'Billing Month',
+  },
+  {
+    key: 'status',
+    value: 'Status',
+  },
+]
+
+const getRows = (bills: Bill[]) => {
+  return bills.map((bill) => {
+    const status = getBillStatus(bill)
+
+    return {
+      id: {
+        type: 'id' as const,
+        value: bill.id,
+      },
+      provider: {
+        type: 'icon-text' as const,
+        value: bill.provider ?? '-',
+      },
+      amount: {
+        type: 'text' as const,
+        value:
+          bill.amount !== undefined && bill.amount !== null
+            ? `₱${bill.amount.toLocaleString('en-PH', {
+                minimumFractionDigits: 2,
+              })}`
+            : '-',
+      },
+      dueDate: {
+        type: 'text' as const,
+        value: bill.dueDate
+          ? getDateByDate(bill.dueDate).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })
+          : '-',
+      },
+      billingMonth: {
+        type: 'text' as const,
+        value: getBillingMonth(),
+      },
+      status: {
+        type: 'badge' as const,
+        value: status.value,
+        style: status.style,
+      },
+    }
+  })
 }
