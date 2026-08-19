@@ -35,7 +35,6 @@ export default async function AccountsPage({ searchParams }: Props) {
   const { docs, ...pagination } = paginatedBills
   const columns = getColumns
   const rows = getRows(docs)
-  const unpaidCount = rows.filter((row) => row.status.value === 'UNPAID').length
   const paidCount = rows.filter((row) => row.status.value === 'PAID').length
   const overdueCount = rows.filter((row) => row.status.value === 'OVERDUE').length
   const totalAmount = docs.reduce((total, doc) => total + (doc.amount ?? 0), 0)
@@ -93,7 +92,7 @@ const getBillStatus = (bill: Bill) => {
   let currentPeriodEnd: Date
 
   // Same-month period: 1-31, 1-30, 5-25, etc.
-  if (billingStart <= billingEnd) {
+  if (billingStart < billingEnd) {
     if (currentDay >= billingStart) {
       currentPeriodStart = new Date(currentYear, currentMonth, billingStart)
 
@@ -246,7 +245,6 @@ const getColumns = [
 const getRows = (bills: Bill[]) => {
   return bills.map((bill) => {
     const status = getBillStatus(bill)
-
     return {
       id: {
         type: 'id' as const,
@@ -255,6 +253,7 @@ const getRows = (bills: Bill[]) => {
       provider: {
         type: 'icon-text' as const,
         value: bill.provider ?? '-',
+        icon: bill.category,
       },
       amount: {
         type: 'text' as const,

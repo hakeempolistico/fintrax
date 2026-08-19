@@ -21,10 +21,7 @@ type Props = {
 }
 export default async function AccountsPage({ searchParams }: Props) {
   const me = await getMe()
-  const params = await searchParams
-  const page = Number(params.page ?? 1)
-  const limit = Number(params.limit ?? 10)
-  const paginated = await myPaginatedCollection<Loan>('loans', page, limit, [
+  const paginated = await myPaginatedCollection<Loan>('loans', 1, 0, [
     {
       name: 'transactions',
       collection: 'transactions',
@@ -32,26 +29,18 @@ export default async function AccountsPage({ searchParams }: Props) {
     },
   ])
   const { docs, ...pagination } = paginated
-  const rows = docs.map((loan) => {
-    return {
-      id: generateKey(),
-      name: loan.name,
-      loanId: loan.accountNumber ?? loan.id,
-      monthly: loan.monthlyPayment ?? '-',
-      amount: loan.principalAmount,
-      paymentFrequency: loan.paymentFrequency,
-      interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
-      status: loan.status,
-      interestType: loan.interestType,
-      loan,
-    }
-  })
+  const rows = getRows(docs)
+  const totalMonthlyPayment = docs.reduce((total, loan) => total + (loan.monthlyPayment ?? 0), 0)
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Bills" />
+      <PageBreadcrumb pageTitle="Loans" />
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard label="Total Montly" number={'10'} className="!text-brand-500" />
+        <FtDashboardCard
+          label="Total Montly"
+          number={formatAmount(totalMonthlyPayment)}
+          className="!text-brand-500"
+        />
         <FtDashboardCard label="Total Paid" number={'10'} className="text-success-500" />
         <FtDashboardCard label="Total Balance" number={'10'} className="!text-gray-500" />
         <FtDashboardCard label="Next Payment Due" number={'10'} className="!text-warning-500" />
@@ -65,4 +54,21 @@ export default async function AccountsPage({ searchParams }: Props) {
       <ActionModals me={me} collection="bills"></ActionModals>
     </div>
   )
+}
+
+const getRows = (loans: Loan[]) => {
+  return loans.map((loan) => {
+    return {
+      id: generateKey(),
+      name: loan.name,
+      loanId: loan.accountNumber ?? loan.id,
+      monthly: loan.monthlyPayment ?? '-',
+      amount: loan.principalAmount,
+      paymentFrequency: loan.paymentFrequency,
+      interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
+      status: loan.status,
+      interestType: loan.interestType,
+      loan,
+    }
+  })
 }

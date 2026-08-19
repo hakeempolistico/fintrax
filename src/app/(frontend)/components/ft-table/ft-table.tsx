@@ -122,6 +122,7 @@ export type FtRow = {
       | 'expense'
       | 'transfer'
       | 'payment'
+      | 'rent'
   }
 }
 export type FtTableProps = {

@@ -43,6 +43,10 @@ export const Bills: CollectionConfig = {
           value: 'internet',
         },
         {
+          label: 'Rent',
+          value: 'rent',
+        },
+        {
           label: 'Mobile',
           value: 'mobile',
         },

@@ -2,7 +2,7 @@ import { CollectionSlug, getPayload, PaginatedDocs } from 'payload'
 import config from '@/payload.config'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { Account, Bill, Member } from '@/payload-types'
+import { Account, Bill, Member, Transaction } from '@/payload-types'
 
 export const requireMember = async () => {
   const payload = await getPayload({ config })
@@ -59,6 +59,7 @@ export const myPaginatedCollection = async <T>(
   page = 1,
   limit = 10,
   relationships: RelationshipConfig[] = [],
+  sort = '-createdAt',
 ): Promise<PaginatedDocs<T>> => {
   const me = await getMe()
   const payload = await getPayload({ config })
@@ -67,6 +68,7 @@ export const myPaginatedCollection = async <T>(
     collection,
     page,
     limit,
+    sort,
     where: {
       member: {
         equals: me.id,
@@ -90,6 +92,7 @@ type RelationshipConfig = {
   name: string
   collection: CollectionSlug
   foreignKey: string
+  sort?: string
 }
 
 export const attachRelationships = async <T>(
@@ -120,4 +123,73 @@ export const attachRelationships = async <T>(
       return updatedDoc as T
     }),
   )
+}
+
+export const getTransactionsThisMonth = async (memberId?: string) => {
+  const payload = await getPayload({ config })
+  const now = new Date()
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+  const { docs } = await payload.find({
+    collection: 'transactions',
+    where: {
+      and: [
+        ...(memberId
+          ? [
+              {
+                member: {
+                  equals: memberId,
+                },
+              },
+            ]
+          : []),
+        {
+          date: {
+            greater_than_equal: startOfMonth.toISOString(),
+          },
+        },
+        {
+          date: {
+            less_than: startOfNextMonth.toISOString(),
+          },
+        },
+      ],
+    },
+  })
+
+  return docs
+}
+
+export const getTotalExpensesAndPayments = (transactions: Transaction[]) => {
+  return transactions
+
+    .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
+
+    .reduce((total, transaction) => total + (transaction.amount ?? 0), 0)
+}
+
+export const getAverageMonthlyExpenses = (transactions: Transaction[]) => {
+  const monthlyTotals = new Map<string, number>()
+
+  transactions.forEach((transaction) => {
+    if (transaction.type !== 'expense' && transaction.type !== 'payment') {
+      return
+    }
+
+    const date = new Date(transaction.date)
+    if (date.getFullYear() < 2026 || (date.getFullYear() === 2026 && date.getMonth() + 1 < 8)) {
+      return
+    }
+
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`
+    monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) ?? 0) + (transaction.amount ?? 0))
+  })
+
+  if (monthlyTotals.size === 0) {
+    return 0
+  }
+
+  const total = Array.from(monthlyTotals.values()).reduce((sum, amount) => sum + amount, 0)
+
+  return total / monthlyTotals.size
 }

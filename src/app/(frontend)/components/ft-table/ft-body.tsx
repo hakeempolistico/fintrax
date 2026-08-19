@@ -22,6 +22,7 @@ import {
   Receipt,
   ArrowUpRight,
   ArrowLeftRight,
+  HouseIcon,
 } from 'lucide-react'
 import { FtColumn, FtRow } from './ft-table'
 
@@ -29,6 +30,8 @@ export type FtBodyProps = {
   columns: FtColumn[]
   rows: FtRow[]
 }
+
+const customIcons = ['meralco', 'converge', 'spotify']
 const FtBody = ({ columns, rows }: FtBodyProps) => {
   return (
     <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
@@ -45,47 +48,68 @@ const FtBody = ({ columns, rows }: FtBodyProps) => {
                   {type === 'text' && value}
                   {type === 'icon-text' && (
                     <div className="flex items-center gap-2">
-                      {icon === 'electricity' && <Zap className="h-5 w-5" />}
-                      {icon === 'water' && <Droplets className="h-5 w-5" />}
-                      {icon === 'internet' && <Wifi className="h-5 w-5" />}
-                      {icon === 'mobile' && <Smartphone className="h-5 w-5" />}
-                      {icon === 'telephone' && <Phone className="h-5 w-5" />}
-                      {icon === 'insurance' && <ShieldCheck className="h-5 w-5" />}
-                      {icon === 'credit-card' && <CreditCard className="h-5 w-5" />}
-                      {icon === 'loan' && <Landmark className="h-5 w-5" />}
-                      {icon === 'government' && <Building2 className="h-5 w-5" />}
-                      {icon === 'personal' && <UserRound className="h-5 w-5" />}
-                      {icon === 'home' && <House className="h-5 w-5" />}
-                      {icon === 'car' && <Car className="h-5 w-5" />}
-                      {icon === 'education' && <GraduationCap className="h-5 w-5" />}
-                      {icon === 'business' && <BriefcaseBusiness className="h-5 w-5" />}
-                      {icon === 'income' && <ArrowDownLeft className="h-5 w-5" />}
-                      {icon === 'payment' && <Receipt className="h-5 w-5" />}
-                      {icon === 'expense' && <ArrowUpRight className="h-5 w-5" />}
-                      {icon === 'transfer' && <ArrowLeftRight className="h-5 w-5" />}
-                      {icon === 'other' && <CircleHelp className="h-5 w-5" />}
+                      {customIcons.includes(value.toLowerCase()) ? (
+                        <>
+                          {value === 'Meralco' ? (
+                            <img
+                              src="/images/logo/meralco.png"
+                              alt={`${value} logo`}
+                              className="h-5 w-5 object-contain"
+                            />
+                          ) : value === 'Spotify' ? (
+                            <img
+                              src="/images/logo/spotify.png"
+                              alt={`${value} logo`}
+                              className="h-5 w-5 object-contain"
+                            />
+                          ) : value === 'Converge' ? (
+                            <img
+                              src="/images/logo/converge.png"
+                              alt={`${value} logo`}
+                              className="h-5 w-5 object-contain"
+                            />
+                          ) : null}
+                        </>
+                      ) : icon === 'electricity' ? (
+                        <Zap className="h-5 w-5" />
+                      ) : icon === 'water' ? (
+                        <Droplets className="h-5 w-5" />
+                      ) : icon === 'internet' ? (
+                        <Wifi className="h-5 w-5" />
+                      ) : icon === 'mobile' ? (
+                        <Smartphone className="h-5 w-5" />
+                      ) : icon === 'telephone' ? (
+                        <Phone className="h-5 w-5" />
+                      ) : icon === 'insurance' ? (
+                        <ShieldCheck className="h-5 w-5" />
+                      ) : icon === 'credit-card' ? (
+                        <CreditCard className="h-5 w-5" />
+                      ) : icon === 'loan' ? (
+                        <Landmark className="h-5 w-5" />
+                      ) : icon === 'government' ? (
+                        <Building2 className="h-5 w-5" />
+                      ) : icon === 'personal' ? (
+                        <UserRound className="h-5 w-5" />
+                      ) : icon === 'home' ? (
+                        <House className="h-5 w-5" />
+                      ) : icon === 'car' ? (
+                        <Car className="h-5 w-5" />
+                      ) : icon === 'education' ? (
+                        <GraduationCap className="h-5 w-5" />
+                      ) : icon === 'business' ? (
+                        <BriefcaseBusiness className="h-5 w-5" />
+                      ) : icon === 'income' ? (
+                        <ArrowDownLeft className="h-5 w-5" />
+                      ) : icon === 'payment' ? (
+                        <Receipt className="h-5 w-5" />
+                      ) : icon === 'expense' ? (
+                        <ArrowUpRight className="h-5 w-5" />
+                      ) : icon === 'transfer' ? (
+                        <ArrowLeftRight className="h-5 w-5" />
+                      ) : icon === 'rent' ? (
+                        <HouseIcon className="h-5 w-5" />
+                      ) : null}
 
-                      {value === 'Meralco' && (
-                        <img
-                          src={`/images/logo/meralco.png`}
-                          alt={`${value} logo`}
-                          className="h-5 w-5 object-contain"
-                        />
-                      )}
-                      {value === 'Spotify' && (
-                        <img
-                          src={`/images/logo/spotify.png`}
-                          alt={`${value} logo`}
-                          className="h-5 w-5 object-contain"
-                        />
-                      )}
-                      {value === 'Converge' && (
-                        <img
-                          src={`/images/logo/converge.png`}
-                          alt={`${value} logo`}
-                          className="h-5 w-5 object-contain"
-                        />
-                      )}
                       <div className="value">{value}</div>
                     </div>
                   )}

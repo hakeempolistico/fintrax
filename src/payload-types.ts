@@ -258,6 +258,7 @@ export interface Bill {
     | 'electricity'
     | 'water'
     | 'internet'
+    | 'rent'
     | 'mobile'
     | 'telephone'
     | 'insurance'
