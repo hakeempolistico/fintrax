@@ -141,6 +141,14 @@ export const Loans: CollectionConfig = {
       ],
     },
     {
+      name: 'terms',
+      type: 'number',
+    },
+    {
+      name: 'termsPaid',
+      type: 'number',
+    },
+    {
       name: 'startDate',
       type: 'date',
       required: true,

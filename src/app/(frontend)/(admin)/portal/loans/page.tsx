@@ -1,11 +1,11 @@
-import FtTable from '@/app/(frontend)/components/ft-table/ft-table'
+import FtDashboardCard from '@/app/(frontend)/components/dasboard-card'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
-import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
-import { dateToReadable, formatAmount } from '@/helper/common.helper'
-import { Bill, Loan } from '@/payload-types'
+import { formatAmount, generateKey } from '@/helper/common.helper'
+import { Loan } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
+import LoanCard from './loan-card'
 
 export const metadata: Metadata = {
   title: 'Next.js Basic Table | TailAdmin - Next.js Dashboard Template',
@@ -32,90 +32,37 @@ export default async function AccountsPage({ searchParams }: Props) {
     },
   ])
   const { docs, ...pagination } = paginated
-  const columns = [
-    {
-      key: 'name',
-      value: 'Name',
-    },
-    {
-      key: 'lender',
-      value: 'Lender',
-    },
-    {
-      key: 'principalAmount',
-      value: 'Principal Amount',
-    },
-    {
-      key: 'totalPaid',
-      value: 'Total Paid',
-    },
-    {
-      key: 'status',
-      value: 'Status',
-    },
-  ]
   const rows = docs.map((loan) => {
-    let statusStyle: 'success' | 'error' = 'success'
-    switch (loan.status) {
-      case 'overdue':
-        statusStyle = 'error'
-        break
-      case 'defaulted':
-        statusStyle = 'error'
-        break
-
-      default:
-        break
-    }
     return {
-      id: {
-        type: 'id' as const,
-        value: loan.id,
-      },
-      name: {
-        type: 'icon-text' as const,
-        value: loan.name,
-        icon: loan.loanType,
-      },
-      lender: {
-        type: 'text' as const,
-        value: loan.lender,
-      },
-      principalAmount: {
-        type: 'text' as const,
-        value: formatAmount(loan.principalAmount).toString(),
-      },
-      totalPaid: {
-        type: 'text' as const,
-        value: formatAmount(
-          loan.transactions?.reduce(
-            (total, transaction) =>
-              total + (typeof transaction === 'string' ? 0 : Number(transaction.amount || 0)),
-            0,
-          ) ?? 0,
-        ).toString(),
-      },
-      status: {
-        type: 'badge' as const,
-        value: loan.status,
-        style: statusStyle,
-      },
+      id: generateKey(),
+      name: loan.name,
+      loanId: loan.accountNumber ?? loan.id,
+      monthly: loan.monthlyPayment ?? '-',
+      amount: loan.principalAmount,
+      paymentFrequency: loan.paymentFrequency,
+      interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
+      status: loan.status,
+      interestType: loan.interestType,
+      loan,
     }
   })
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Basic Table" />
-      <div className="space-y-6">
-        <ComponentCard title="Basic Table 1">
-          <div className="grid grid-cols-12 gap-6">
-            <div className="col-span-12">
-              <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable>
-            </div>
-          </div>
-        </ComponentCard>
+      <PageBreadcrumb pageTitle="Bills" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
+        <FtDashboardCard label="Total Montly" number={'10'} className="!text-brand-500" />
+        <FtDashboardCard label="Total Paid" number={'10'} className="text-success-500" />
+        <FtDashboardCard label="Total Balance" number={'10'} className="!text-gray-500" />
+        <FtDashboardCard label="Next Payment Due" number={'10'} className="!text-warning-500" />
       </div>
-      <ActionModals me={me} collection="loans"></ActionModals>
+      <div className="space-y-6">
+        {/* <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable> */}
+        {rows.map((row) => (
+          <LoanCard key={row.id} {...row}></LoanCard>
+        ))}
+      </div>
+      <ActionModals me={me} collection="bills"></ActionModals>
     </div>
   )
 }

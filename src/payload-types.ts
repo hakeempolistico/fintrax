@@ -354,6 +354,8 @@ export interface Loan {
   interestType?: ('fixed' | 'variable') | null;
   monthlyPayment?: number | null;
   paymentFrequency?: ('weekly' | 'bi-weekly' | 'monthly' | 'quarterly' | 'yearly') | null;
+  terms?: number | null;
+  termsPaid?: number | null;
   startDate: string;
   endDate?: string | null;
   status: 'active' | 'paid-off' | 'overdue' | 'defaulted';
@@ -590,6 +592,8 @@ export interface LoansSelect<T extends boolean = true> {
   interestType?: T;
   monthlyPayment?: T;
   paymentFrequency?: T;
+  terms?: T;
+  termsPaid?: T;
   startDate?: T;
   endDate?: T;
   status?: T;
