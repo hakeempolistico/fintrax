@@ -128,14 +128,9 @@ const AppSidebar: React.FC = () => {
           </div>
 
           {showBrandName && (
-            <div className="min-w-0 leading-none">
-              <div className="flex items-baseline gap-0.5">
-                <span className="text-[19px] font-extrabold tracking-tight text-slate-900 dark:text-white">FINTR</span>
-                <span className="text-[19px] font-extrabold tracking-tight text-cyan-500">AX</span>
-              </div>
-              <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
-                Finance Tracker
-              </p>
+            <div className="flex h-11 items-center">
+              <span className="text-[20px] font-extrabold tracking-tight text-slate-900 dark:text-white">FIN</span>
+              <span className="text-[20px] font-extrabold tracking-tight text-cyan-500">TRAX</span>
             </div>
           )}
         </Link>
