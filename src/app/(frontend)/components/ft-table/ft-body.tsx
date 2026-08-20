@@ -23,6 +23,7 @@ import {
   ArrowLeftRight,
   HouseIcon,
   Pencil,
+  CircleEllipsis,
 } from 'lucide-react'
 import { FtColumn, FtRow } from './ft-table'
 
@@ -32,7 +33,94 @@ export type FtBodyProps = {
   onEdit?: (row: FtRow) => void
 }
 
-const customIcons = ['meralco', 'converge', 'spotify']
+const customIcons: Record<string, string> = {
+  meralco: '/images/logo/meralco.png',
+  spotify: '/images/logo/spotify.png',
+  converge: '/images/logo/converge.png',
+}
+
+const iconMap = {
+  electricity: {
+    icon: Zap,
+    classColor: 'text-yellow-500',
+  },
+  water: {
+    icon: Droplets,
+    classColor: 'text-blue-500',
+  },
+  internet: {
+    icon: Wifi,
+    classColor: 'text-purple-500',
+  },
+  mobile: {
+    icon: Smartphone,
+    classColor: 'text-green-500',
+  },
+  telephone: {
+    icon: Phone,
+    classColor: 'text-indigo-500',
+  },
+  insurance: {
+    icon: ShieldCheck,
+    classColor: 'text-cyan-500',
+  },
+  'credit-card': {
+    icon: CreditCard,
+    classColor: 'text-orange-500',
+  },
+  loan: {
+    icon: Landmark,
+    classColor: 'text-red-500',
+  },
+  government: {
+    icon: Building2,
+    classColor: 'text-slate-500',
+  },
+  personal: {
+    icon: UserRound,
+    classColor: 'text-pink-500',
+  },
+  home: {
+    icon: House,
+    classColor: 'text-emerald-500',
+  },
+  car: {
+    icon: Car,
+    classColor: 'text-blue-600',
+  },
+  education: {
+    icon: GraduationCap,
+    classColor: 'text-violet-500',
+  },
+  business: {
+    icon: BriefcaseBusiness,
+    classColor: 'text-amber-600',
+  },
+  income: {
+    icon: ArrowDownLeft,
+    classColor: 'text-green-600',
+  },
+  payment: {
+    icon: Receipt,
+    classColor: 'text-orange-500',
+  },
+  expense: {
+    icon: ArrowUpRight,
+    classColor: 'text-red-500',
+  },
+  transfer: {
+    icon: ArrowLeftRight,
+    classColor: 'text-teal-500',
+  },
+  rent: {
+    icon: HouseIcon,
+    classColor: 'text-blue-500',
+  },
+  other: {
+    icon: CircleEllipsis,
+    classColor: 'text-orange-500',
+  },
+}
 const FtBody = ({ columns, rows, onEdit }: FtBodyProps) => {
   return (
     <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
@@ -49,48 +137,38 @@ const FtBody = ({ columns, rows, onEdit }: FtBodyProps) => {
                   {type === 'text' && value}
                   {type === 'icon-text' && (
                     <div className="flex items-center gap-2">
-                      {customIcons.includes(value.toLowerCase()) ? (
-                        <>
-                          {value === 'Meralco' ? (
-                            <img src="/images/logo/meralco.png" alt={`${value} logo`} className="h-5 w-5 object-contain" />
-                          ) : value === 'Spotify' ? (
-                            <img src="/images/logo/spotify.png" alt={`${value} logo`} className="h-5 w-5 object-contain" />
-                          ) : value === 'Converge' ? (
-                            <img src="/images/logo/converge.png" alt={`${value} logo`} className="h-5 w-5 object-contain" />
-                          ) : null}
-                        </>
-                      ) : icon === 'electricity' ? <Zap className="h-5 w-5" />
-                        : icon === 'water' ? <Droplets className="h-5 w-5" />
-                        : icon === 'internet' ? <Wifi className="h-5 w-5" />
-                        : icon === 'mobile' ? <Smartphone className="h-5 w-5" />
-                        : icon === 'telephone' ? <Phone className="h-5 w-5" />
-                        : icon === 'insurance' ? <ShieldCheck className="h-5 w-5" />
-                        : icon === 'credit-card' ? <CreditCard className="h-5 w-5" />
-                        : icon === 'loan' ? <Landmark className="h-5 w-5" />
-                        : icon === 'government' ? <Building2 className="h-5 w-5" />
-                        : icon === 'personal' ? <UserRound className="h-5 w-5" />
-                        : icon === 'home' ? <House className="h-5 w-5" />
-                        : icon === 'car' ? <Car className="h-5 w-5" />
-                        : icon === 'education' ? <GraduationCap className="h-5 w-5" />
-                        : icon === 'business' ? <BriefcaseBusiness className="h-5 w-5" />
-                        : icon === 'income' ? <ArrowDownLeft className="h-5 w-5" />
-                        : icon === 'payment' ? <Receipt className="h-5 w-5" />
-                        : icon === 'expense' ? <ArrowUpRight className="h-5 w-5" />
-                        : icon === 'transfer' ? <ArrowLeftRight className="h-5 w-5" />
-                        : icon === 'rent' ? <HouseIcon className="h-5 w-5" />
-                        : null}
+                      {customIcons[value.toLowerCase()] ? (
+                        <img
+                          src={customIcons[value.toLowerCase()]}
+                          alt={`${value} logo`}
+                          className="h-5 w-5 object-contain"
+                        />
+                      ) : (
+                        (() => {
+                          const { icon: Icon, classColor } = iconMap[icon as keyof typeof iconMap]
+                          return Icon ? <Icon className={`h-5 w-5 ${classColor}`} /> : null
+                        })()
+                      )}
                       <div className="value">{value}</div>
                     </div>
                   )}
                   {type === 'two-row' && (
                     <div className="flex items-center">
                       <div>
-                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">{value}</span>
-                        <span className="block text-gray-500 text-theme-xs dark:text-gray-400">{subValue?.toUpperCase()}</span>
+                        <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
+                          {value}
+                        </span>
+                        <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
+                          {subValue?.toUpperCase()}
+                        </span>
                       </div>
                     </div>
                   )}
-                  {type === 'badge' && <Badge size="sm" color={style}>{value.toUpperCase()}</Badge>}
+                  {type === 'badge' && (
+                    <Badge size="sm" color={style}>
+                      {value.toUpperCase()}
+                    </Badge>
+                  )}
                 </TableCell>
               )
             })}

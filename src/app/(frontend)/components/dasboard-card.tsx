@@ -16,7 +16,7 @@ const FtDashboardCard = ({ label, number, className }: FtDashboardCardProps) => 
       <div className="flex items-end justify-between">
         <div>
           <span className="text-sm text-gray-500 dark:text-gray-400">{label}</span>
-          <h4 className={`mt-2 font-bold text-gray-800 text-2xl dark:text-white/90 ${className}`}>
+          <h4 className={`mt-2 font-bold text-gray-800 text-xl dark:text-white/90 ${className}`}>
             {number}
           </h4>
         </div>

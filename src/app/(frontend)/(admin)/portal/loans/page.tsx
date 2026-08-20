@@ -31,6 +31,12 @@ export default async function AccountsPage({ searchParams }: Props) {
   const { docs, ...pagination } = paginated
   const rows = getRows(docs)
   const totalMonthlyPayment = docs.reduce((total, loan) => total + (loan.monthlyPayment ?? 0), 0)
+  const activeLoans = docs.filter((loan) => loan.status === 'active')
+  const activeLoansCount = activeLoans.length
+  const totalPrincipalAmount = activeLoans.reduce(
+    (total, loan) => total + (loan.principalAmount ?? 0),
+    0,
+  )
 
   return (
     <div>
@@ -41,9 +47,17 @@ export default async function AccountsPage({ searchParams }: Props) {
           number={formatAmount(totalMonthlyPayment)}
           className="!text-brand-500"
         />
-        <FtDashboardCard label="Total Paid" number={'10'} className="text-success-500" />
-        <FtDashboardCard label="Total Balance" number={'10'} className="!text-gray-500" />
-        <FtDashboardCard label="Next Payment Due" number={'10'} className="!text-warning-500" />
+        <FtDashboardCard
+          label="Total Principal Amount"
+          number={formatAmount(totalPrincipalAmount)}
+          className="text-success-500"
+        />
+        <FtDashboardCard
+          label="Active Loans"
+          number={activeLoansCount.toString()}
+          className="!text-gray-500"
+        />
+        <FtDashboardCard label="-" number={'-'} className="!text-warning-500" />
       </div>
       <div className="space-y-6">
         {/* <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable> */}
