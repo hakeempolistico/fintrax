@@ -11,7 +11,6 @@ export const metadata: Metadata = {
   title: 'Next.js Basic Table | TailAdmin - Next.js Dashboard Template',
   description:
     'This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template',
-  // other metadata
 }
 type Props = {
   searchParams: Promise<{
@@ -28,7 +27,7 @@ export default async function AccountsPage({ searchParams }: Props) {
       foreignKey: 'loan',
     },
   ])
-  const { docs, ...pagination } = paginated
+  const { docs } = paginated
   const rows = getRows(docs)
   const totalMonthlyPayment = docs.reduce((total, loan) => total + (loan.monthlyPayment ?? 0), 0)
   const activeLoans = docs.filter((loan) => loan.status === 'active')
@@ -42,47 +41,28 @@ export default async function AccountsPage({ searchParams }: Props) {
     <div>
       <PageBreadcrumb pageTitle="Loans" />
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard
-          label="Total Montly"
-          number={formatAmount(totalMonthlyPayment)}
-          className="!text-brand-500"
-        />
-        <FtDashboardCard
-          label="Total Principal Amount"
-          number={formatAmount(totalPrincipalAmount)}
-          className="text-success-500"
-        />
-        <FtDashboardCard
-          label="Active Loans"
-          number={activeLoansCount.toString()}
-          className="!text-gray-500"
-        />
+        <FtDashboardCard label="Total Montly" number={formatAmount(totalMonthlyPayment)} className="!text-brand-500" />
+        <FtDashboardCard label="Total Principal Amount" number={formatAmount(totalPrincipalAmount)} className="text-success-500" />
+        <FtDashboardCard label="Active Loans" number={activeLoansCount.toString()} className="!text-gray-500" />
         <FtDashboardCard label="-" number={'-'} className="!text-warning-500" />
       </div>
       <div className="space-y-6">
-        {/* <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable> */}
-        {rows.map((row) => (
-          <LoanCard key={row.id} {...row}></LoanCard>
-        ))}
+        {rows.map((row) => <LoanCard key={row.id} {...row} />)}
       </div>
-      <ActionModals me={me} collection="bills"></ActionModals>
+      <ActionModals me={me} collection="loans" />
     </div>
   )
 }
 
-const getRows = (loans: Loan[]) => {
-  return loans.map((loan) => {
-    return {
-      id: generateKey(),
-      name: loan.name,
-      loanId: loan.accountNumber ?? loan.id,
-      monthly: loan.monthlyPayment ?? '-',
-      amount: loan.principalAmount,
-      paymentFrequency: loan.paymentFrequency,
-      interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
-      status: loan.status,
-      interestType: loan.interestType,
-      loan,
-    }
-  })
-}
+const getRows = (loans: Loan[]) => loans.map((loan) => ({
+  id: generateKey(),
+  name: loan.name,
+  loanId: loan.accountNumber ?? loan.id,
+  monthly: loan.monthlyPayment ?? '-',
+  amount: loan.principalAmount,
+  paymentFrequency: loan.paymentFrequency,
+  interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
+  status: loan.status,
+  interestType: loan.interestType,
+  loan,
+}))
