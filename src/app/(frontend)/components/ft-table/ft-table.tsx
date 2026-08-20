@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import FtHeader from './ft-header'
 import FtBody from './ft-body'
 import { Modal } from '@/components/ui/modal'
-import { useState } from 'react'
+import { Table } from '@/components/ui/table'
+import { useState, type ReactNode } from 'react'
 
 export type FtColumn = { key: string; value: string; width?: string }
 export type FtRow = {
@@ -41,7 +42,7 @@ export type FtRow = {
 export type FtEditConfig<T> = {
   records: T[]
   getRecordId: (record: T) => string
-  renderForm: (record: T, closeModal: () => void) => React.ReactNode
+  renderForm: (record: T, closeModal: () => void) => ReactNode
 }
 
 export type FtTableProps<T = unknown> = {
@@ -67,7 +68,10 @@ export default function FtTable<T>({ columns, rows, pagination, edit }: FtTableP
     <>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
-          <TableWrapper columns={columns} rows={rows} onEdit={edit ? handleEdit : undefined} />
+          <Table className="table-auto">
+            <FtHeader columns={columns} hasActions={Boolean(edit)} />
+            <FtBody columns={columns} rows={rows} onEdit={edit ? handleEdit : undefined} />
+          </Table>
         </div>
         {pagination && (
           <div className="flex justify-end p-3">
@@ -86,15 +90,5 @@ export default function FtTable<T>({ columns, rows, pagination, edit }: FtTableP
         </Modal>
       )}
     </>
-  )
-}
-
-function TableWrapper({ columns, rows, onEdit }: { columns: FtColumn[]; rows: FtRow[]; onEdit?: (row: FtRow) => void }) {
-  const { Table } = require('../../../../components/ui/table')
-  return (
-    <Table className="table-auto">
-      <FtHeader columns={columns} hasActions={Boolean(onEdit)} />
-      <FtBody columns={columns} rows={rows} onEdit={onEdit} />
-    </Table>
   )
 }
