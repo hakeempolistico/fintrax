@@ -27,6 +27,7 @@ const othersItems: NavItem[] = []
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar()
   const pathname = usePathname()
+  const showBrandName = isExpanded || isHovered || isMobileOpen
 
   const renderMenuItems = (items: NavItem[], menuType: 'main' | 'others') => (
     <ul className="flex flex-col gap-4">
@@ -109,16 +110,34 @@ const AppSidebar: React.FC = () => {
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={`py-8 flex ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}>
-        <Link href="/portal">
-          <Image
-            src="/images/logo/logo-fintrax.png"
-            alt="Fintrax"
-            width={isExpanded || isHovered || isMobileOpen ? 72 : 40}
-            height={isExpanded || isHovered || isMobileOpen ? 72 : 40}
-            className={isExpanded || isHovered || isMobileOpen ? 'h-16 w-16 object-contain' : 'h-10 w-10 object-contain'}
-            priority
-          />
+      <div className={`flex py-7 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}>
+        <Link
+          href="/portal"
+          className={`flex items-center rounded-2xl transition-all duration-200 ${showBrandName ? 'gap-3 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.03]' : 'justify-center'}`}
+          aria-label="Fintrax dashboard"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 ring-1 ring-brand-100 dark:bg-brand-500/10 dark:ring-brand-500/20">
+            <Image
+              src="/images/logo/logo-fintrax.png"
+              alt="Fintrax logo"
+              width={44}
+              height={44}
+              className="h-9 w-9 object-contain"
+              priority
+            />
+          </div>
+
+          {showBrandName && (
+            <div className="min-w-0 leading-none">
+              <div className="flex items-baseline gap-0.5">
+                <span className="text-[19px] font-extrabold tracking-tight text-slate-900 dark:text-white">FINTR</span>
+                <span className="text-[19px] font-extrabold tracking-tight text-cyan-500">AX</span>
+              </div>
+              <p className="mt-1 text-[10px] font-medium uppercase tracking-[0.22em] text-gray-400 dark:text-gray-500">
+                Finance Tracker
+              </p>
+            </div>
+          )}
         </Link>
       </div>
       <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
