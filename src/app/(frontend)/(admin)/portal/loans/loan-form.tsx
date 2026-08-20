@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Label from '../../../../../components/form/Label'
-import Input from '../../../../../components/form/input/InputField'
-import Button from '../../../../../components/ui/button/Button'
+import Label from '@/components/form/Label'
+import Input from '@/components/form/input/InputField'
+import Button from '@/components/ui/button/Button'
 import Select from '@/components/form/Select'
 import { Loan } from '@/payload-types'
 
@@ -53,11 +53,23 @@ const LoanForm = ({ closeModal, handleSave, mode = 'create', initialData }: Loan
       <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
         <div>
           <Label>Name</Label>
-          <Input defaultValue={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} type="text" placeholder="Personal Loan" name="name" />
+          <Input
+            defaultValue={data.name}
+            onChange={(e) => setData({ ...data, name: e.target.value })}
+            type="text"
+            placeholder="Personal Loan"
+            name="name"
+          />
         </div>
         <div>
           <Label>Lender</Label>
-          <Input defaultValue={data.lender} onChange={(e) => setData({ ...data, lender: e.target.value })} type="text" placeholder="Bank / Lender" name="lender" />
+          <Input
+            defaultValue={data.lender}
+            onChange={(e) => setData({ ...data, lender: e.target.value })}
+            type="text"
+            placeholder="Bank / Lender"
+            name="lender"
+          />
         </div>
         <div>
           <Label>Loan Type</Label>
@@ -79,33 +91,74 @@ const LoanForm = ({ closeModal, handleSave, mode = 'create', initialData }: Loan
         </div>
         <div>
           <Label>Account Number</Label>
-          <Input defaultValue={data.accountNumber} onChange={(e) => setData({ ...data, accountNumber: e.target.value })} type="text" placeholder="1234 1234 1234 1234" name="accountNumber" />
+          <Input
+            defaultValue={data.accountNumber}
+            onChange={(e) => setData({ ...data, accountNumber: e.target.value })}
+            type="text"
+            placeholder="1234 1234 1234 1234"
+            name="accountNumber"
+          />
         </div>
         <div>
           <Label>Principal Amount</Label>
-          <Input defaultValue={data.principalAmount} onChange={(e) => setData({ ...data, principalAmount: e.target.value })} type="number" placeholder="0.00" name="principalAmount" min="0" step={0.01} />
+          <Input
+            defaultValue={data.principalAmount}
+            onChange={(e) => setData({ ...data, principalAmount: e.target.value })}
+            type="number"
+            placeholder="0.00"
+            name="principalAmount"
+            min="0"
+            step={0.01}
+          />
         </div>
         <div>
           <Label>Outstanding Balance</Label>
-          <Input defaultValue={data.outstandingBalance} onChange={(e) => setData({ ...data, outstandingBalance: e.target.value })} type="number" placeholder="0.00" name="outstandingBalance" min="0" step={0.01} />
+          <Input
+            defaultValue={data.outstandingBalance}
+            onChange={(e) => setData({ ...data, outstandingBalance: e.target.value })}
+            type="number"
+            placeholder="0.00"
+            name="outstandingBalance"
+            min="0"
+            step={0.01}
+          />
         </div>
         <div>
           <Label>Interest Rate (%)</Label>
-          <Input defaultValue={data.interestRate} onChange={(e) => setData({ ...data, interestRate: e.target.value })} type="number" placeholder="5.5" name="interestRate" min="0" step={0.01} />
+          <Input
+            defaultValue={data.interestRate}
+            onChange={(e) => setData({ ...data, interestRate: e.target.value })}
+            type="number"
+            placeholder="5.5"
+            name="interestRate"
+            min="0"
+            step={0.01}
+          />
         </div>
         <div>
           <Label>Interest Type</Label>
           <Select
             key={`interest-type-${initialData?.id ?? 'new'}`}
             defaultValue={data.interestType}
-            options={[{ value: 'fixed', label: 'Fixed' }, { value: 'variable', label: 'Variable' }]}
+            options={[
+              { value: 'fixed', label: 'Fixed' },
+              { value: 'variable', label: 'Variable' },
+            ]}
             placeholder="Select interest type"
             onChange={(value) => setData({ ...data, interestType: value })}
           />
         </div>
         <div>
           <Label>Monthly Payment</Label>
-          <Input defaultValue={data.monthlyPayment} onChange={(e) => setData({ ...data, monthlyPayment: e.target.value })} type="number" placeholder="0.00" name="monthlyPayment" min="0" step={0.01} />
+          <Input
+            defaultValue={data.monthlyPayment}
+            onChange={(e) => setData({ ...data, monthlyPayment: e.target.value })}
+            type="number"
+            placeholder="0.00"
+            name="monthlyPayment"
+            min="0"
+            step={0.01}
+          />
         </div>
         <div>
           <Label>Payment Frequency</Label>
@@ -125,11 +178,21 @@ const LoanForm = ({ closeModal, handleSave, mode = 'create', initialData }: Loan
         </div>
         <div>
           <Label>Start Date</Label>
-          <Input defaultValue={data.startDate} type="date" name="startDate" onChange={(e) => setData({ ...data, startDate: e.target.value })} />
+          <Input
+            defaultValue={data.startDate}
+            type="date"
+            name="startDate"
+            onChange={(e) => setData({ ...data, startDate: e.target.value })}
+          />
         </div>
         <div>
           <Label>End Date</Label>
-          <Input defaultValue={data.endDate} type="date" name="endDate" onChange={(e) => setData({ ...data, endDate: e.target.value })} />
+          <Input
+            defaultValue={data.endDate}
+            type="date"
+            name="endDate"
+            onChange={(e) => setData({ ...data, endDate: e.target.value })}
+          />
         </div>
         <div>
           <Label>Status</Label>
@@ -148,12 +211,20 @@ const LoanForm = ({ closeModal, handleSave, mode = 'create', initialData }: Loan
         </div>
         <div className="sm:col-span-2">
           <Label>Notes</Label>
-          <Input defaultValue={data.notes} onChange={(e) => setData({ ...data, notes: e.target.value })} type="text" placeholder="Additional notes" name="notes" />
+          <Input
+            defaultValue={data.notes}
+            onChange={(e) => setData({ ...data, notes: e.target.value })}
+            type="text"
+            placeholder="Additional notes"
+            name="notes"
+          />
         </div>
       </div>
 
       <div className="mt-6 flex w-full items-center justify-end gap-3">
-        <Button size="sm" variant="outline" type="button" onClick={closeModal}>Close</Button>
+        <Button size="sm" variant="outline" type="button" onClick={closeModal}>
+          Close
+        </Button>
         <Button size="sm">{mode === 'edit' ? 'Save Changes' : 'Create'}</Button>
       </div>
     </form>

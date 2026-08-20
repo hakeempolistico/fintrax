@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Label from '../../../../../components/form/Label'
-import Input from '../../../../../components/form/input/InputField'
-import Button from '../../../../../components/ui/button/Button'
+import Label from '@/components/form/Label'
+import Input from '@/components/form/input/InputField'
+import Button from '@/components/ui/button/Button'
 import Select from '@/components/form/Select'
 import { Account, Bill, Loan } from '@/payload-types'
 
