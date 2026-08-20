@@ -1,6 +1,6 @@
 import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
-import FtTable, { FtColumn, FtRow } from '@/components/fintrax/tables/FtTable'
-import TransactionForm from '@/components/fintrax/transactions/TransactionForm'
+import { FtColumn, FtRow } from '@/components/fintrax/tables/FtTable'
+import TransactionsTable from '@/components/fintrax/transactions/TransactionsTable'
 import ActionModals from '@/components/fintrax/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { dateToReadable, formatAmount } from '@/helper/common.helper'
@@ -87,37 +87,14 @@ export default async function TransactionsPage({ searchParams }: Props) {
       </div>
 
       <div className="space-y-6">
-        <FtTable
+        <TransactionsTable
           columns={columns}
           rows={rows}
+          transactions={docs}
           pagination={pagination}
-          edit={{
-            records: docs,
-            getRecordId: (transaction) => transaction.id,
-            renderForm: (transaction, closeModal) => (
-              <TransactionForm
-                mode="edit"
-                initialData={transaction}
-                closeModal={closeModal}
-                accounts={accounts}
-                bills={bills}
-                loans={loans}
-                handleSave={async (data) => {
-                  const response = await fetch(`/api/transactions/${transaction.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                  })
-                  if (!response.ok) {
-                    const result = await response.json()
-                    alert(result?.errors?.[0]?.message ?? 'Unable to update transaction.')
-                    return false
-                  }
-                  return true
-                }}
-              />
-            ),
-          }}
+          accounts={accounts}
+          bills={bills}
+          loans={loans}
         />
       </div>
 
