@@ -9,26 +9,26 @@ type DashboardCardProps = {
 const toneStyles = {
   income: {
     icon: ArrowDownLeft,
-    container: 'border-success-100 bg-success-50/70 dark:border-success-500/20 dark:bg-success-500/10',
-    iconWrap: 'bg-success-100 text-success-600 dark:bg-success-500/15 dark:text-success-400',
+    container: 'border-success-100/70 bg-success-50/20 dark:border-success-500/15 dark:bg-success-500/[0.04]',
+    iconWrap: 'bg-success-100/70 text-success-600 dark:bg-success-500/10 dark:text-success-400',
     value: 'text-success-600 dark:text-success-400',
   },
   expense: {
     icon: ArrowUpRight,
-    container: 'border-error-100 bg-error-50/70 dark:border-error-500/20 dark:bg-error-500/10',
-    iconWrap: 'bg-error-100 text-error-600 dark:bg-error-500/15 dark:text-error-400',
+    container: 'border-error-100/70 bg-error-50/20 dark:border-error-500/15 dark:bg-error-500/[0.04]',
+    iconWrap: 'bg-error-100/70 text-error-600 dark:bg-error-500/10 dark:text-error-400',
     value: 'text-error-600 dark:text-error-400',
   },
   balance: {
     icon: WalletCards,
-    container: 'border-brand-100 bg-brand-50/70 dark:border-brand-500/20 dark:bg-brand-500/10',
-    iconWrap: 'bg-brand-100 text-brand-600 dark:bg-brand-500/15 dark:text-brand-400',
+    container: 'border-brand-100/70 bg-brand-50/20 dark:border-brand-500/15 dark:bg-brand-500/[0.04]',
+    iconWrap: 'bg-brand-100/70 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400',
     value: 'text-brand-600 dark:text-brand-400',
   },
   bills: {
     icon: CalendarClock,
-    container: 'border-warning-100 bg-warning-50/70 dark:border-warning-500/20 dark:bg-warning-500/10',
-    iconWrap: 'bg-warning-100 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400',
+    container: 'border-warning-100/70 bg-warning-50/20 dark:border-warning-500/15 dark:bg-warning-500/[0.04]',
+    iconWrap: 'bg-warning-100/70 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400',
     value: 'text-warning-600 dark:text-warning-400',
   },
 } as const
