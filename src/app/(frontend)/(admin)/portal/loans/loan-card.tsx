@@ -226,14 +226,19 @@ const LoanCard = (props: LoanCardProps) => {
                 {recentTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
-                    className={`flex items-center justify-between gap-4 px-4 py-3 ${index !== recentTransactions.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
+                    className={`flex items-start justify-between gap-4 px-4 py-3 ${index !== recentTransactions.length - 1 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-gray-800 dark:text-white">{formatDate(transaction.date)}</p>
                       <p className="mt-0.5 truncate text-xs text-gray-500 dark:text-gray-400">
                         {titleCase(transaction.paymentMethod)}
                         {transaction.reference ? ` • ${transaction.reference}` : ''}
                       </p>
+                      {transaction.notes && (
+                        <p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-gray-600 dark:text-gray-300">
+                          {transaction.notes}
+                        </p>
+                      )}
                     </div>
                     <p className="shrink-0 text-sm font-semibold text-success-600 dark:text-success-400">
                       {formatAmount(transaction.amount)}
