@@ -1,5 +1,5 @@
 import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
-import { FtColumn, FtRow } from '@/components/fintrax/tables/FtTable'
+import { FtColumn, FtRow } from '@/components/fintrax/table/FtTable'
 import TransactionsTable from '@/components/fintrax/transactions/TransactionsTable'
 import ActionModals from '@/components/fintrax/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -80,10 +80,18 @@ export default async function TransactionsPage({ searchParams }: Props) {
       <PageBreadcrumb pageTitle="Transactions" />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <DashboardCard label="Expense" number={formatAmount(expenses)} className="!text-brand-500" />
+        <DashboardCard
+          label="Expense"
+          number={formatAmount(expenses)}
+          className="!text-brand-500"
+        />
         <DashboardCard label="Income" number={formatAmount(income)} className="text-success-500" />
         <DashboardCard label="Balance" number={formatAmount(balance)} className="!text-gray-500" />
-        <DashboardCard label="Average Expenses Per Month" number={formatAmount(averageExpensesPerMonth)} className="!text-warning-500" />
+        <DashboardCard
+          label="Average Expenses Per Month"
+          number={formatAmount(averageExpensesPerMonth)}
+          className="!text-warning-500"
+        />
       </div>
 
       <div className="space-y-6">

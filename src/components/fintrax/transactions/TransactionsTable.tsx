@@ -1,6 +1,6 @@
 'use client'
 
-import FtTable, { FtColumn, FtRow } from '@/components/fintrax/tables/FtTable'
+import FtTable, { FtColumn, FtRow } from '@/components/fintrax/table/FtTable'
 import TransactionForm from '@/components/fintrax/transactions/TransactionForm'
 import { Account, Bill, Loan, Transaction } from '@/payload-types'
 import { PaginatedDocs } from 'payload'
