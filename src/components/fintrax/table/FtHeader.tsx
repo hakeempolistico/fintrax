@@ -1,0 +1,3 @@
+import { TableCell, TableHeader, TableRow } from '@/components/ui/table'
+import { FtColumn } from './FtTable'
+export default function FtHeader({ columns, hasActions = false }: { columns: FtColumn[]; hasActions?: boolean }) { return <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]"><TableRow>{columns.map((col) => <TableCell key={col.key} isHeader className="px-5 py-3 text-start font-medium text-gray-500 text-theme-xs dark:text-gray-400" style={col.width ? { width: col.width } : undefined}>{col.value}</TableCell>)}{hasActions && <TableCell isHeader className="w-16 px-5 py-3 text-center font-medium text-gray-500 text-theme-xs dark:text-gray-400">Actions</TableCell>}</TableRow></TableHeader> }
