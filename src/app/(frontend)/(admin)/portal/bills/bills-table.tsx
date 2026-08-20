@@ -13,11 +13,22 @@ type BillsTableProps = {
 }
 
 export default function BillsTable({ columns, rows, bills, pagination }: BillsTableProps) {
-  const saveBill = async (bill: Bill, data: any) => {
+  const saveBill = async (bill: Bill, data: Partial<Bill>) => {
+    const editableData = {
+      provider: data.provider,
+      customerAccountNumber: data.customerAccountNumber,
+      category: data.category,
+      type: data.type,
+      amount: data.amount,
+      billingPeriodStart: data.billingPeriodStart,
+      billingPeriodEnd: data.billingPeriodEnd,
+      dueDate: data.dueDate,
+    }
+
     const response = await fetch(`/api/bills/${bill.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify(editableData),
     })
 
     const result = await response.json()
