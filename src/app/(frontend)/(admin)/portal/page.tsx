@@ -17,11 +17,7 @@ const transactionMonthKey = (value: string) => monthKey(new Date(value))
 export default async function Dashboard() {
   const member = await getMe()
   const [transactionsResult, billsResult, loansResult] = await Promise.all([
-    myPaginatedCollection<Transaction>('transactions', 1, 0, [
-      { name: 'bill', collection: 'bills', foreignKey: 'transactions' },
-      { name: 'loan', collection: 'loans', foreignKey: 'transactions' },
-      { name: 'account', collection: 'accounts', foreignKey: 'transactions' },
-    ], '-date'),
+    myPaginatedCollection<Transaction>('transactions', 1, 0, [], '-date'),
     myPaginatedCollection<Bill>('bills', 1, 0),
     myPaginatedCollection<Loan>('loans', 1, 0),
   ])
@@ -32,8 +28,12 @@ export default async function Dashboard() {
   const now = new Date()
   const currentMonth = monthKey(now)
   const thisMonth = transactions.filter((transaction) => transactionMonthKey(transaction.date) === currentMonth)
-  const income = thisMonth.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
-  const expenses = thisMonth.filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment').reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
+  const income = thisMonth
+    .filter((transaction) => transaction.type === 'income')
+    .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
+  const expenses = thisMonth
+    .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
+    .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
   const balance = income - expenses
 
   const monthly = Array.from({ length: 6 }, (_, index) => {
@@ -42,8 +42,12 @@ export default async function Dashboard() {
     const monthTransactions = transactions.filter((transaction) => transactionMonthKey(transaction.date) === key)
     return {
       label: date.toLocaleDateString('en-PH', { month: 'short' }),
-      income: monthTransactions.filter((transaction) => transaction.type === 'income').reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0),
-      expenses: monthTransactions.filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment').reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0),
+      income: monthTransactions
+        .filter((transaction) => transaction.type === 'income')
+        .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0),
+      expenses: monthTransactions
+        .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
+        .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0),
     }
   })
 
@@ -54,6 +58,7 @@ export default async function Dashboard() {
       const category = transaction.category ?? 'other'
       categoryMap.set(category, (categoryMap.get(category) ?? 0) + (transaction.amount ?? 0))
     })
+
   const categories = [...categoryMap.entries()]
     .map(([label, value]) => ({
       label: label.split('-').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
@@ -70,7 +75,9 @@ export default async function Dashboard() {
     })
     .slice(0, 5)
 
-  const activeLoans = loans.filter((loan) => loan.status === 'active' || loan.status === 'overdue').slice(0, 5)
+  const activeLoans = loans
+    .filter((loan) => loan.status === 'active' || loan.status === 'overdue')
+    .slice(0, 5)
   const recentTransactions = transactions.slice(0, 5)
 
   return (
@@ -93,19 +100,19 @@ export default async function Dashboard() {
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
         <div className="col-span-12 xl:col-span-8">
-          <DashboardCharts monthly={monthly} categories={[]} />
+          <DashboardCharts type="monthly" monthly={monthly} />
         </div>
         <div className="col-span-12 xl:col-span-4">
-          <DashboardCharts monthly={[]} categories={categories} />
+          <DashboardCharts type="categories" categories={categories} />
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2 md:gap-6">
-        <DashboardLists bills={upcomingBills} loans={[]} transactions={[]} />
-        <DashboardLists bills={[]} loans={activeLoans} transactions={[]} />
+        <DashboardLists type="bills" items={upcomingBills} />
+        <DashboardLists type="loans" items={activeLoans} />
       </div>
 
-      <DashboardLists bills={[]} loans={[]} transactions={recentTransactions} />
+      <DashboardLists type="transactions" items={recentTransactions} />
     </div>
   )
 }
