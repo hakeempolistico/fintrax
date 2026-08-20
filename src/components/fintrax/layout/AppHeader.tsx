@@ -1,12 +1,16 @@
 'use client'
 
 import { ThemeToggleButton } from '@/components/common/ThemeToggleButton'
-import UserDropdown from '@/components/header/UserDropdown'
 import { useSidebar } from '@/context/SidebarContext'
 import Image from 'next/image'
 import Link from 'next/link'
+import UserDropdown, { HeaderUser } from './UserDropdown'
 
-export default function AppHeader() {
+type AppHeaderProps = {
+  user: HeaderUser
+}
+
+export default function AppHeader({ user }: AppHeaderProps) {
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar()
 
   const handleToggle = () => {
@@ -36,13 +40,15 @@ export default function AppHeader() {
 
           <Link href="/portal" className="flex items-center gap-2 lg:hidden">
             <Image src="/images/logo/logo-fintrax.png" width={36} height={36} alt="Fintrax" className="h-9 w-9 object-contain" priority />
-            <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">FIN<span className="text-cyan-500">TRAX</span></span>
+            <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white">
+              FIN<span className="text-cyan-500">TRAX</span>
+            </span>
           </Link>
         </div>
 
         <div className="flex w-full items-center justify-between gap-4 px-5 py-4 shadow-theme-md lg:w-auto lg:justify-end lg:px-0 lg:shadow-none">
           <ThemeToggleButton />
-          <UserDropdown />
+          <UserDropdown user={user} />
         </div>
       </div>
     </header>
