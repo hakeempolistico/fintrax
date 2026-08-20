@@ -3,7 +3,6 @@
 import { Dropdown } from '@/components/ui/dropdown/Dropdown'
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem'
 import { ChevronDown, LogOut, UserRound } from 'lucide-react'
-import Link from 'next/link'
 import { useState } from 'react'
 
 export type HeaderUser = {
@@ -38,9 +37,8 @@ export default function UserDropdown({ user }: UserDropdownProps) {
 
         <div className="hidden min-w-0 sm:block">
           <p className="max-w-40 truncate text-sm font-semibold text-gray-800 dark:text-white/90">
-            {fullName || user.email}
+            {user.firstName || user.email}
           </p>
-          <p className="max-w-40 truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
         </div>
 
         <ChevronDown
