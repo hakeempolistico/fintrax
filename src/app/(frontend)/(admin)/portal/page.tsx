@@ -92,10 +92,10 @@ export default async function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
-        <DashboardCard label="Total Income" number={formatAmount(income)} className="text-success-500" />
-        <DashboardCard label="Total Expenses" number={formatAmount(expenses)} className="text-error-500" />
-        <DashboardCard label="Monthly Balance" number={formatAmount(balance)} className={balance >= 0 ? 'text-brand-500' : 'text-error-500'} />
-        <DashboardCard label="Upcoming Bills" number={`${upcomingBills.length} ${upcomingBills.length === 1 ? 'Bill' : 'Bills'}`} className="text-warning-500" />
+        <DashboardCard label="Total Income" number={formatAmount(income)} tone="income" />
+        <DashboardCard label="Total Expenses" number={formatAmount(expenses)} tone="expense" />
+        <DashboardCard label="Monthly Balance" number={formatAmount(balance)} tone="balance" />
+        <DashboardCard label="Upcoming Bills" number={`${upcomingBills.length} ${upcomingBills.length === 1 ? 'Bill' : 'Bills'}`} tone="bills" />
       </div>
 
       <div className="grid grid-cols-12 gap-4 md:gap-6">
