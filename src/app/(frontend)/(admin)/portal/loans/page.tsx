@@ -32,6 +32,7 @@ export default async function AccountsPage({ searchParams }: Props) {
   const totalMonthlyPayment = docs.reduce((total, loan) => total + (loan.monthlyPayment ?? 0), 0)
   const activeLoans = docs.filter((loan) => loan.status === 'active')
   const activeLoansCount = activeLoans.length
+  const overdueLoansCount = docs.filter((loan) => loan.status === 'overdue').length
   const totalPrincipalAmount = activeLoans.reduce(
     (total, loan) => total + (loan.principalAmount ?? 0),
     0,
@@ -44,7 +45,7 @@ export default async function AccountsPage({ searchParams }: Props) {
         <FtDashboardCard label="Total Montly" number={formatAmount(totalMonthlyPayment)} className="!text-brand-500" />
         <FtDashboardCard label="Total Principal Amount" number={formatAmount(totalPrincipalAmount)} className="text-success-500" />
         <FtDashboardCard label="Active Loans" number={activeLoansCount.toString()} className="!text-gray-500" />
-        <FtDashboardCard label="-" number={'-'} className="!text-warning-500" />
+        <FtDashboardCard label="Overdue Loans" number={overdueLoansCount.toString()} className="!text-warning-500" />
       </div>
       <div className="space-y-6">
         {rows.map((row) => <LoanCard key={row.id} {...row} />)}
