@@ -132,6 +132,7 @@ export const getTransactionsThisMonth = async (memberId?: string) => {
   const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
   const { docs } = await payload.find({
     collection: 'transactions',
+    pagination: false,
     where: {
       and: [
         ...(memberId
