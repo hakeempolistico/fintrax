@@ -80,17 +80,13 @@ export default async function TransactionsPage({ searchParams }: Props) {
       <PageBreadcrumb pageTitle="Transactions" />
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <DashboardCard
-          label="Expense"
-          number={formatAmount(expenses)}
-          className="!text-brand-500"
-        />
-        <DashboardCard label="Income" number={formatAmount(income)} className="text-success-500" />
-        <DashboardCard label="Balance" number={formatAmount(balance)} className="!text-gray-500" />
+        <DashboardCard label="Expense" number={formatAmount(expenses)} tone="expense" />
+        <DashboardCard label="Income" number={formatAmount(income)} tone="income" />
+        <DashboardCard label="Balance" number={formatAmount(balance)} tone="balance" />
         <DashboardCard
           label="Average Expenses Per Month"
           number={formatAmount(averageExpensesPerMonth)}
-          className="!text-warning-500"
+          tone="bills"
         />
       </div>
 
