@@ -1,10 +1,11 @@
-import FtDashboardCard from '@/app/(frontend)/components/dasboard-card'
+import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { formatAmount, getDateByDate } from '@/helper/common.helper'
 import { Bill } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
+import { CalendarClock, ReceiptText, WalletCards } from 'lucide-react'
 import BillsTable from './bills-table'
 
 export const metadata: Metadata = {
@@ -31,11 +32,11 @@ export default async function BillsPage({ searchParams }: Props) {
   return (
     <div>
       <PageBreadcrumb pageTitle="Bills" />
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard label="Total Monthly" number={formatAmount(totalAmount)} className="!text-gray-500" />
-        <FtDashboardCard label="Total Bills" number={pagination.totalDocs.toString()} className="!text-brand-500" />
-        <FtDashboardCard label="Paid" number={paidCount.toString()} className="text-success-500" />
-        <FtDashboardCard label="Overdue" number={overdueCount.toString()} className="!text-warning-500" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        <DashboardCard label="Total Monthly" number={formatAmount(totalAmount)} helper="Combined bill amount" tone="neutral" icon={CalendarClock} />
+        <DashboardCard label="Total Bills" number={pagination.totalDocs.toString()} helper="Bills being tracked" tone="brand" icon={ReceiptText} />
+        <DashboardCard label="Paid" number={paidCount.toString()} helper="Paid in the current cycle" tone="success" icon={WalletCards} />
+        <DashboardCard label="Overdue" number={overdueCount.toString()} helper="Bills needing attention" tone="warning" icon={CalendarClock} />
       </div>
       <div className="space-y-6">
         <BillsTable columns={getColumns} rows={rows} bills={docs} pagination={pagination} />
