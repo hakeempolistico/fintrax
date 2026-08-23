@@ -139,7 +139,7 @@ export default function DashboardLists(props: DashboardListsProps) {
 
 function ListCard({ title, subtitle, href, children }: { title: string; subtitle: string; href: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="rounded-2xl border border-gray-200 bg-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-800 sm:px-6">
         <div>
           <h3 className="font-semibold text-gray-800 dark:text-white/90">{title}</h3>
