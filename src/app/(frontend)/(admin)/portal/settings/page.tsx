@@ -12,15 +12,26 @@ type Member = {
   lastName: string
 }
 
+type MessageState = {
+  text: string
+  type: 'success' | 'error' | ''
+}
+
 function messageFrom(data: any, fallback: string) {
   return data?.errors?.[0]?.message ?? data?.message ?? fallback
+}
+
+function messageClass(type: MessageState['type']) {
+  if (type === 'success') return 'text-sm text-success-600 dark:text-success-400'
+  if (type === 'error') return 'text-sm text-error-600 dark:text-error-400'
+  return 'text-sm text-gray-600 dark:text-gray-300'
 }
 
 export default function SettingsPage() {
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
-  const [profileMessage, setProfileMessage] = useState('')
-  const [passwordMessage, setPasswordMessage] = useState('')
+  const [profileMessage, setProfileMessage] = useState<MessageState>({ text: '', type: '' })
+  const [passwordMessage, setPasswordMessage] = useState<MessageState>({ text: '', type: '' })
   const [savingProfile, setSavingProfile] = useState(false)
   const [savingPassword, setSavingPassword] = useState(false)
 
@@ -42,7 +53,7 @@ export default function SettingsPage() {
     if (!member) return
 
     setSavingProfile(true)
-    setProfileMessage('')
+    setProfileMessage({ text: '', type: '' })
     const form = new FormData(event.currentTarget)
     const response = await fetch(`/api/members/${member.id}`, {
       method: 'PATCH',
@@ -57,12 +68,12 @@ export default function SettingsPage() {
     setSavingProfile(false)
 
     if (!response.ok) {
-      setProfileMessage(messageFrom(data, 'Unable to update your details.'))
+      setProfileMessage({ text: messageFrom(data, 'Unable to update your details.'), type: 'error' })
       return
     }
 
     setMember(data?.doc ?? member)
-    setProfileMessage('Member details updated successfully.')
+    setProfileMessage({ text: 'Member details updated successfully.', type: 'success' })
   }
 
   async function updatePassword(event: React.FormEvent<HTMLFormElement>) {
@@ -70,7 +81,7 @@ export default function SettingsPage() {
     if (!member) return
 
     setSavingPassword(true)
-    setPasswordMessage('')
+    setPasswordMessage({ text: '', type: '' })
     const formElement = event.currentTarget
     const form = new FormData(formElement)
     const currentPassword = String(form.get('currentPassword') ?? '')
@@ -78,12 +89,12 @@ export default function SettingsPage() {
     const confirmPassword = String(form.get('confirmPassword') ?? '')
 
     if (newPassword.length < 8) {
-      setPasswordMessage('New password must be at least 8 characters.')
+      setPasswordMessage({ text: 'New password must be at least 8 characters.', type: 'error' })
       setSavingPassword(false)
       return
     }
     if (newPassword !== confirmPassword) {
-      setPasswordMessage('New password and confirmation do not match.')
+      setPasswordMessage({ text: 'New password and confirmation do not match.', type: 'error' })
       setSavingPassword(false)
       return
     }
@@ -95,7 +106,7 @@ export default function SettingsPage() {
       body: JSON.stringify({ email: member.email, password: currentPassword }),
     })
     if (!verify.ok) {
-      setPasswordMessage('Current password is incorrect.')
+      setPasswordMessage({ text: 'Current password is incorrect.', type: 'error' })
       setSavingPassword(false)
       return
     }
@@ -110,12 +121,12 @@ export default function SettingsPage() {
     setSavingPassword(false)
 
     if (!response.ok) {
-      setPasswordMessage(messageFrom(data, 'Unable to update your password.'))
+      setPasswordMessage({ text: messageFrom(data, 'Unable to update your password.'), type: 'error' })
       return
     }
 
     formElement.reset()
-    setPasswordMessage('Password updated successfully.')
+    setPasswordMessage({ text: 'Password updated successfully.', type: 'success' })
   }
 
   if (loading) {
@@ -148,7 +159,7 @@ export default function SettingsPage() {
             <Input type="email" value={member.email} disabled />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed from Settings.</p>
           </div>
-          {profileMessage && <p className="text-sm text-gray-600 dark:text-gray-300">{profileMessage}</p>}
+          {profileMessage.text && <p className={messageClass(profileMessage.type)}>{profileMessage.text}</p>}
           <div className="flex justify-end"><Button size="sm" disabled={savingProfile}>{savingProfile ? 'Saving...' : 'Save changes'}</Button></div>
         </form>
       </section>
@@ -164,7 +175,7 @@ export default function SettingsPage() {
             <div><Label>New password</Label><Input name="newPassword" type="password" placeholder="At least 8 characters" /></div>
             <div><Label>Confirm new password</Label><Input name="confirmPassword" type="password" placeholder="Repeat new password" /></div>
           </div>
-          {passwordMessage && <p className="text-sm text-gray-600 dark:text-gray-300">{passwordMessage}</p>}
+          {passwordMessage.text && <p className={messageClass(passwordMessage.type)}>{passwordMessage.text}</p>}
           <div className="flex justify-end"><Button size="sm" disabled={savingPassword}>{savingPassword ? 'Updating...' : 'Update password'}</Button></div>
         </form>
       </section>
