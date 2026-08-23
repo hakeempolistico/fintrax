@@ -231,6 +231,10 @@ export interface Account {
   type: 'bank' | 'cash' | 'credit-card' | 'e-wallet';
   balance: number;
   /**
+   * Use this account as the preferred account for future transactions. Only one default account is allowed per member.
+   */
+  isDefault?: boolean | null;
+  /**
    * Additional account information.
    */
   metadata?:
@@ -295,7 +299,11 @@ export interface Transaction {
   date: string;
   type: 'income' | 'payment' | 'expense' | 'transfer';
   source: 'account' | 'bill' | 'loan' | 'other';
+  /**
+   * Optional account associated with this transaction. If selected, it is used in account balance calculations.
+   */
   account?: (string | null) | Account;
+  destinationAccount?: (string | null) | Account;
   bill?: (string | null) | Bill;
   /**
    * The billing month this payment is for.
@@ -554,6 +562,7 @@ export interface AccountsSelect<T extends boolean = true> {
   source?: T;
   type?: T;
   balance?: T;
+  isDefault?: T;
   metadata?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -615,6 +624,7 @@ export interface TransactionsSelect<T extends boolean = true> {
   type?: T;
   source?: T;
   account?: T;
+  destinationAccount?: T;
   bill?: T;
   billPaymentFor?: T;
   loan?: T;
