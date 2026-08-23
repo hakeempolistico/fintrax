@@ -54,8 +54,9 @@ export default function BillsTable({ columns, rows, bills, pagination }: BillsTa
 
   const handleRowClick = (row: FtRow) => {
     const id = row.id?.value
-    if (!id) return
-    const bill = bills.find((item) => item.id === id)
+    if (id == null) return
+
+    const bill = bills.find((item) => String(item.id) === String(id))
     if (bill) setViewingBill(bill)
   }
 
