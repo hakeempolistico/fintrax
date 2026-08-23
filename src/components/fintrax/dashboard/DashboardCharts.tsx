@@ -40,7 +40,7 @@ export default function DashboardCharts(props: DashboardChartsProps) {
     }
 
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
         <div className="mb-5">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Income vs Expenses</h3>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Last 6 months</p>
@@ -68,7 +68,7 @@ export default function DashboardCharts(props: DashboardChartsProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Expenses by Category</h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This month</p>
