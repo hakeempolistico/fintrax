@@ -5,11 +5,16 @@ import { redirect } from 'next/navigation'
 import { Account, Bill, Member, Transaction } from '@/payload-types'
 
 export type AccountWithBalance = Account & {
+  isDefault?: boolean
   currentBalance: number
   totalIn: number
   totalOut: number
   transactionCount: number
   lastTransactionDate?: string
+}
+
+type TransactionWithDestination = Transaction & {
+  destinationAccount?: string | Account | null
 }
 
 export const requireMember = async () => {
@@ -72,23 +77,26 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
   const payload = await getPayload({ config })
   const accountIds = accounts.map((account) => account.id)
 
-  const { docs: transactions } = await payload.find({
+  const { docs } = await payload.find({
     collection: 'transactions',
     depth: 0,
     pagination: false,
     sort: '-date',
     where: {
-      account: {
-        in: accountIds,
-      },
-    },
+      or: [
+        { account: { in: accountIds } },
+        { destinationAccount: { in: accountIds } },
+      ],
+    } as any,
   })
 
+  const transactions = docs as TransactionWithDestination[]
   const summaries = new Map<string, AccountWithBalance>(
     accounts.map((account) => [
       account.id,
       {
         ...account,
+        isDefault: (account as Account & { isDefault?: boolean }).isDefault ?? false,
         currentBalance: account.balance ?? 0,
         totalIn: 0,
         totalOut: 0,
@@ -98,19 +106,45 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
   )
 
   transactions.forEach((transaction) => {
-    const accountId =
+    const sourceAccountId =
       typeof transaction.account === 'string' ? transaction.account : transaction.account?.id
+    const destinationAccountId =
+      typeof transaction.destinationAccount === 'string'
+        ? transaction.destinationAccount
+        : transaction.destinationAccount?.id
+    const amount = transaction.amount ?? 0
 
-    if (!accountId) {
+    if (transaction.type === 'transfer') {
+      if (sourceAccountId) {
+        const source = summaries.get(sourceAccountId)
+        if (source) {
+          source.currentBalance -= amount
+          source.transactionCount += 1
+          source.lastTransactionDate ??= transaction.date
+        }
+      }
+
+      if (destinationAccountId) {
+        const destination = summaries.get(destinationAccountId)
+        if (destination) {
+          destination.currentBalance += amount
+          destination.transactionCount += 1
+          destination.lastTransactionDate ??= transaction.date
+        }
+      }
+
       return
     }
 
-    const summary = summaries.get(accountId)
+    if (!sourceAccountId) {
+      return
+    }
+
+    const summary = summaries.get(sourceAccountId)
     if (!summary) {
       return
     }
 
-    const amount = transaction.amount ?? 0
     summary.transactionCount += 1
     summary.lastTransactionDate ??= transaction.date
 
@@ -120,11 +154,7 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
       return
     }
 
-    if (
-      transaction.type === 'expense' ||
-      transaction.type === 'payment' ||
-      transaction.type === 'transfer'
-    ) {
+    if (transaction.type === 'expense' || transaction.type === 'payment') {
       summary.totalOut += amount
       summary.currentBalance -= amount
     }
