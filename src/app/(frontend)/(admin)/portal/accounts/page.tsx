@@ -20,10 +20,10 @@ export default async function AccountsPage() {
   const transactionCount = accounts.reduce((sum, account) => sum + account.transactionCount, 0)
 
   const stats = [
-    { label: 'Total balance', value: formatCurrency(totalBalance), helper: 'Across all accounts', icon: WalletCards },
-    { label: 'Accounts', value: String(accounts.length), helper: 'Connected money sources', icon: Landmark },
-    { label: 'Money out', value: formatCurrency(totalOut), helper: 'Recorded account outflow', icon: TrendingDown },
-    { label: 'Transactions', value: String(transactionCount), helper: 'Linked to your accounts', icon: ReceiptText },
+    { label: 'Total balance', value: formatCurrency(totalBalance), helper: 'Across all accounts', icon: WalletCards, cardClass: 'border-emerald-200 bg-emerald-50/70 dark:border-emerald-500/20 dark:bg-emerald-500/[0.08]', iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400', valueClass: 'text-emerald-700 dark:text-emerald-400' },
+    { label: 'Accounts', value: String(accounts.length), helper: 'Connected money sources', icon: Landmark, cardClass: 'border-blue-200 bg-blue-50/70 dark:border-blue-500/20 dark:bg-blue-500/[0.08]', iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400', valueClass: 'text-blue-700 dark:text-blue-400' },
+    { label: 'Money out', value: formatCurrency(totalOut), helper: 'Recorded account outflow', icon: TrendingDown, cardClass: 'border-rose-200 bg-rose-50/70 dark:border-rose-500/20 dark:bg-rose-500/[0.08]', iconClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400', valueClass: 'text-rose-700 dark:text-rose-400' },
+    { label: 'Transactions', value: String(transactionCount), helper: 'Linked to your accounts', icon: ReceiptText, cardClass: 'border-violet-200 bg-violet-50/70 dark:border-violet-500/20 dark:bg-violet-500/[0.08]', iconClass: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400', valueClass: 'text-violet-700 dark:text-violet-400' },
   ]
 
   return (
@@ -38,14 +38,14 @@ export default async function AccountsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {stats.map(({ label, value, helper, icon: Icon }) => (
-              <div key={label} className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+            {stats.map(({ label, value, helper, icon: Icon, cardClass, iconClass, valueClass }) => (
+              <div key={label} className={`rounded-2xl border p-5 transition-all hover:-translate-y-0.5 hover:shadow-sm ${cardClass}`}>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/[0.06]"><Icon className="h-4 w-4 text-gray-600 dark:text-gray-300" /></div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}><Icon className="h-5 w-5" /></div>
                 </div>
-                <p className="mt-4 truncate text-xl font-bold text-gray-900 dark:text-white">{value}</p>
-                <p className="mt-1 text-xs text-gray-400">{helper}</p>
+                <p className={`mt-4 truncate text-xl font-bold ${valueClass}`}>{value}</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helper}</p>
               </div>
             ))}
           </div>
