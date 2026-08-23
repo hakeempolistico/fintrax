@@ -2,7 +2,7 @@
 
 import { Dropdown } from '@/components/ui/dropdown/Dropdown'
 import { DropdownItem } from '@/components/ui/dropdown/DropdownItem'
-import { ChevronDown, LogOut, UserRound } from 'lucide-react'
+import { ChevronDown, LogOut, Settings, UserRound } from 'lucide-react'
 import { useState } from 'react'
 
 export type HeaderUser = {
@@ -66,9 +66,19 @@ export default function UserDropdown({ user }: UserDropdownProps) {
         <div className="mt-2 border-t border-gray-100 pt-2 dark:border-gray-800">
           <DropdownItem
             tag="a"
-            href="/signin"
+            href="/portal/settings"
             onItemClick={() => setIsOpen(false)}
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
+          >
+            <Settings className="h-4 w-4" />
+            Settings
+          </DropdownItem>
+
+          <DropdownItem
+            tag="a"
+            href="/signin"
+            onItemClick={() => setIsOpen(false)}
+            className="mt-1 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
           >
             <LogOut className="h-4 w-4" />
             Sign out
