@@ -25,7 +25,7 @@ import {
   Pencil,
   CircleEllipsis,
 } from 'lucide-react'
-import { FtColumn, FtRow } from './ft-table'
+import type { FtColumn, FtRow } from './FtTable'
 
 export type FtBodyProps = {
   columns: FtColumn[]
