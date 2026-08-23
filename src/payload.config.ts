@@ -18,17 +18,14 @@ import { Transactions } from './collections/Transactions'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const importExportCollections = ['members', 'accounts', 'bills', 'loans', 'transactions'].map(
-  (slug) => ({
-    slug,
-    export: {
-      disableJobsQueue: true,
-    },
-    import: {
-      disableJobsQueue: true,
-    },
-  }),
-)
+const synchronousImportExport = {
+  export: {
+    disableJobsQueue: true,
+  },
+  import: {
+    disableJobsQueue: true,
+  },
+} as const
 
 export default buildConfig({
   admin: {
@@ -49,7 +46,13 @@ export default buildConfig({
   sharp,
   plugins: [
     importExportPlugin({
-      collections: importExportCollections,
+      collections: [
+        { slug: 'members', ...synchronousImportExport },
+        { slug: 'accounts', ...synchronousImportExport },
+        { slug: 'bills', ...synchronousImportExport },
+        { slug: 'loans', ...synchronousImportExport },
+        { slug: 'transactions', ...synchronousImportExport },
+      ],
       overrideExportCollection: ({ collection }) => ({
         ...collection,
         admin: {
