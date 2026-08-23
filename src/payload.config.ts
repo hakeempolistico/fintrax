@@ -78,7 +78,7 @@ export default buildConfig({
     vercelBlobStorage({
       collections: blobCollections,
       token: process.env.BLOB_READ_WRITE_TOKEN,
-      clientUploads: true,
+      clientUploads: false,
     }),
   ],
   endpoints: [AICaptureEndpoint],
