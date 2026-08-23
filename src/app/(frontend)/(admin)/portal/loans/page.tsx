@@ -1,17 +1,16 @@
-import FtDashboardCard from '@/app/(frontend)/components/dasboard-card'
+import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { formatAmount, generateKey } from '@/helper/common.helper'
 import { Loan } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
+import { CalendarClock, HandCoins, Landmark } from 'lucide-react'
 import LoanCard from './loan-card'
 
 export const metadata: Metadata = {
-  title: 'Next.js Basic Table | TailAdmin - Next.js Dashboard Template',
-  description:
-    'This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template',
-  // other metadata
+  title: 'Loans | Fintrax',
+  description: 'Manage and review your Fintrax loans.',
 }
 type Props = {
   searchParams: Promise<{
@@ -19,7 +18,7 @@ type Props = {
     limit?: string
   }>
 }
-export default async function AccountsPage({ searchParams }: Props) {
+export default async function LoansPage({ searchParams }: Props) {
   const me = await getMe()
   const paginated = await myPaginatedCollection<Loan>('loans', 1, 0, [
     {
@@ -28,47 +27,43 @@ export default async function AccountsPage({ searchParams }: Props) {
       foreignKey: 'loan',
     },
   ])
-  const { docs, ...pagination } = paginated
+  const { docs } = paginated
   const rows = getRows(docs)
   const totalMonthlyPayment = docs.reduce((total, loan) => total + (loan.monthlyPayment ?? 0), 0)
+  const activeLoans = docs.filter((loan) => loan.status === 'active')
+  const activeLoansCount = activeLoans.length
+  const overdueLoansCount = docs.filter((loan) => loan.status === 'overdue').length
+  const totalPrincipalAmount = activeLoans.reduce(
+    (total, loan) => total + (loan.principalAmount ?? 0),
+    0,
+  )
 
   return (
     <div>
       <PageBreadcrumb pageTitle="Loans" />
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard
-          label="Total Montly"
-          number={formatAmount(totalMonthlyPayment)}
-          className="!text-brand-500"
-        />
-        <FtDashboardCard label="Total Paid" number={'10'} className="text-success-500" />
-        <FtDashboardCard label="Total Balance" number={'10'} className="!text-gray-500" />
-        <FtDashboardCard label="Next Payment Due" number={'10'} className="!text-warning-500" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        <DashboardCard label="Total Monthly" number={formatAmount(totalMonthlyPayment)} helper="Combined scheduled payments" tone="brand" icon={CalendarClock} />
+        <DashboardCard label="Total Principal" number={formatAmount(totalPrincipalAmount)} helper="Across active loans" tone="success" icon={Landmark} />
+        <DashboardCard label="Active Loans" number={activeLoansCount.toString()} helper="Currently being repaid" tone="neutral" icon={HandCoins} />
+        <DashboardCard label="Overdue Loans" number={overdueLoansCount.toString()} helper="Loans needing attention" tone="warning" icon={CalendarClock} />
       </div>
       <div className="space-y-6">
-        {/* <FtTable columns={columns} rows={rows} pagination={pagination}></FtTable> */}
-        {rows.map((row) => (
-          <LoanCard key={row.id} {...row}></LoanCard>
-        ))}
+        {rows.map((row) => <LoanCard key={row.id} {...row} />)}
       </div>
-      <ActionModals me={me} collection="bills"></ActionModals>
+      <ActionModals me={me} collection="loans" />
     </div>
   )
 }
 
-const getRows = (loans: Loan[]) => {
-  return loans.map((loan) => {
-    return {
-      id: generateKey(),
-      name: loan.name,
-      loanId: loan.accountNumber ?? loan.id,
-      monthly: loan.monthlyPayment ?? '-',
-      amount: loan.principalAmount,
-      paymentFrequency: loan.paymentFrequency,
-      interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
-      status: loan.status,
-      interestType: loan.interestType,
-      loan,
-    }
-  })
-}
+const getRows = (loans: Loan[]) => loans.map((loan) => ({
+  id: generateKey(),
+  name: loan.name,
+  loanId: loan.accountNumber ?? loan.id,
+  monthly: loan.monthlyPayment ?? '-',
+  amount: loan.principalAmount,
+  paymentFrequency: loan.paymentFrequency,
+  interestRate: loan.interestRate ? loan.interestRate.toString() : '-',
+  status: loan.status,
+  interestType: loan.interestType,
+  loan,
+}))

@@ -225,11 +225,9 @@ const AppSidebar: React.FC = () => {
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>({})
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-  // const isActive = (path: string) => path === pathname;
   const isActive = useCallback((path: string) => path === pathname, [pathname])
 
   useEffect(() => {
-    // Check if the current path matches any submenu item
     let submenuMatched = false
     ;['main', 'others'].forEach((menuType) => {
       const items = menuType === 'main' ? navItems : othersItems
@@ -248,14 +246,12 @@ const AppSidebar: React.FC = () => {
       })
     })
 
-    // If no submenu item matches, close the open submenu
     if (!submenuMatched) {
       setOpenSubmenu(null)
     }
   }, [pathname, isActive])
 
   useEffect(() => {
-    // Set the height of the submenu items when the submenu is opened
     if (openSubmenu !== null) {
       const key = `${openSubmenu.type}-${openSubmenu.index}`
       if (subMenuRefs.current[key]) {
@@ -292,24 +288,23 @@ const AppSidebar: React.FC = () => {
       >
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
-            <>
-              <Image
-                className="dark:hidden"
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-              <Image
-                className="hidden dark:block"
-                src="/images/logo/logo-dark.svg"
-                alt="Logo"
-                width={150}
-                height={40}
-              />
-            </>
+            <Image
+              src="/images/logo/logo-fintrax.png"
+              alt="Fintrax"
+              width={72}
+              height={72}
+              className="h-16 w-16 object-contain"
+              priority
+            />
           ) : (
-            <Image src="/images/logo/logo-icon.svg" alt="Logo" width={32} height={32} />
+            <Image
+              src="/images/logo/logo-fintrax.png"
+              alt="Fintrax"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+              priority
+            />
           )}
         </Link>
       </div>

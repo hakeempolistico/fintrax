@@ -3,8 +3,9 @@ import { FtColumn } from './ft-table'
 
 type FtHeaderProps = {
   columns: FtColumn[]
+  hasActions?: boolean
 }
-const FtHeader = ({ columns }: FtHeaderProps) => {
+const FtHeader = ({ columns, hasActions = false }: FtHeaderProps) => {
   return (
     <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
       <TableRow>
@@ -19,6 +20,14 @@ const FtHeader = ({ columns }: FtHeaderProps) => {
             </TableCell>
           )
         })}
+        {hasActions && (
+          <TableCell
+            isHeader
+            className="w-16 px-5 py-3 text-center font-medium text-gray-500 text-theme-xs dark:text-gray-400"
+          >
+            Actions
+          </TableCell>
+        )}
       </TableRow>
     </TableHeader>
   )

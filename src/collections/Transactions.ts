@@ -6,7 +6,6 @@ export const Transactions: CollectionConfig = {
     defaultColumns: ['date', 'type', 'category', 'amount', 'account'],
   },
   fields: [
-    // Owner
     {
       name: 'member',
       type: 'relationship',
@@ -32,22 +31,10 @@ export const Transactions: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        {
-          label: 'Income',
-          value: 'income',
-        },
-        {
-          label: 'Payment',
-          value: 'payment',
-        },
-        {
-          label: 'Expense',
-          value: 'expense',
-        },
-        {
-          label: 'Transfer',
-          value: 'transfer',
-        },
+        { label: 'Income', value: 'income' },
+        { label: 'Payment', value: 'payment' },
+        { label: 'Expense', value: 'expense' },
+        { label: 'Transfer', value: 'transfer' },
       ],
     },
     {
@@ -55,31 +42,33 @@ export const Transactions: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        {
-          label: 'Account',
-          value: 'account',
-        },
-        {
-          label: 'Bill',
-          value: 'bill',
-        },
-        {
-          label: 'Loan',
-          value: 'loan',
-        },
-        {
-          label: 'Other',
-          value: 'other',
-        },
+        { label: 'Account', value: 'account' },
+        { label: 'Bill', value: 'bill' },
+        { label: 'Loan', value: 'loan' },
+        { label: 'Other', value: 'other' },
       ],
     },
     {
       name: 'account',
       type: 'relationship',
       relationTo: 'accounts',
-      label: 'Account',
+      label: 'Account Used',
       admin: {
-        condition: (_, siblingData) => siblingData?.source === 'account',
+        condition: (_, siblingData) =>
+          siblingData?.source === 'account' ||
+          siblingData?.type === 'expense' ||
+          siblingData?.type === 'payment' ||
+          siblingData?.type === 'transfer',
+        description: 'Optional account associated with this transaction. If selected, it is used in account balance calculations.',
+      },
+    },
+    {
+      name: 'destinationAccount',
+      type: 'relationship',
+      relationTo: 'accounts',
+      label: 'Destination Account',
+      admin: {
+        condition: (_, siblingData) => siblingData?.type === 'transfer',
       },
     },
     {
@@ -112,104 +101,38 @@ export const Transactions: CollectionConfig = {
         condition: (_, siblingData) => siblingData?.source === 'loan',
       },
     },
-
-    // Category
     {
       name: 'category',
       type: 'select',
       options: [
-        {
-          label: 'Salary',
-          value: 'salary',
-        },
-        {
-          label: 'Food',
-          value: 'food',
-        },
-        {
-          label: 'Transportation',
-          value: 'transportation',
-        },
-        {
-          label: 'Shopping',
-          value: 'shopping',
-        },
-        {
-          label: 'Utilities',
-          value: 'utilities',
-        },
-        {
-          label: 'Rent',
-          value: 'rent',
-        },
-        {
-          label: 'Insurance',
-          value: 'insurance',
-        },
-        {
-          label: 'Loan Payment',
-          value: 'loan-payment',
-        },
-        {
-          label: 'Bill Payment',
-          value: 'bill-payment',
-        },
-        {
-          label: 'Entertainment',
-          value: 'entertainment',
-        },
-        {
-          label: 'Healthcare',
-          value: 'healthcare',
-        },
-        {
-          label: 'Education',
-          value: 'education',
-        },
-        {
-          label: 'Travel',
-          value: 'travel',
-        },
-        {
-          label: 'Other',
-          value: 'other',
-        },
+        { label: 'Salary', value: 'salary' },
+        { label: 'Food', value: 'food' },
+        { label: 'Transportation', value: 'transportation' },
+        { label: 'Shopping', value: 'shopping' },
+        { label: 'Utilities', value: 'utilities' },
+        { label: 'Rent', value: 'rent' },
+        { label: 'Insurance', value: 'insurance' },
+        { label: 'Loan Payment', value: 'loan-payment' },
+        { label: 'Bill Payment', value: 'bill-payment' },
+        { label: 'Entertainment', value: 'entertainment' },
+        { label: 'Healthcare', value: 'healthcare' },
+        { label: 'Education', value: 'education' },
+        { label: 'Travel', value: 'travel' },
+        { label: 'Other', value: 'other' },
       ],
     },
-
-    // Payment method
     {
       name: 'paymentMethod',
       type: 'select',
       options: [
-        {
-          label: 'Cash',
-          value: 'cash',
-        },
-        {
-          label: 'Bank Transfer',
-          value: 'bank-transfer',
-        },
-        {
-          label: 'Credit Card',
-          value: 'credit-card',
-        },
-        {
-          label: 'Debit Card',
-          value: 'debit-card',
-        },
-        {
-          label: 'Direct Debit',
-          value: 'direct-debit',
-        },
-        {
-          label: 'Other',
-          value: 'other',
-        },
+        { label: 'Cash', value: 'cash' },
+        { label: 'Bank Transfer', value: 'bank-transfer' },
+        { label: 'Credit Card', value: 'credit-card' },
+        { label: 'Debit Card', value: 'debit-card' },
+        { label: 'Direct Debit', value: 'direct-debit' },
+        { label: 'Other', value: 'other' },
       ],
     },
-
-    // Optional reference
     {
       name: 'reference',
       type: 'text',
@@ -218,8 +141,6 @@ export const Transactions: CollectionConfig = {
         description: 'Transaction reference, receipt number, or confirmation ID.',
       },
     },
-
-    // Notes
     {
       name: 'notes',
       type: 'textarea',
@@ -231,6 +152,29 @@ export const Transactions: CollectionConfig = {
     },
   ],
   hooks: {
+    beforeValidate: [
+      async ({ data }) => {
+        if (!data) return data
+
+        if (data.type === 'transfer') {
+          if (!data.account || !data.destinationAccount) {
+            throw new Error('Transfers require both a source and destination account.')
+          }
+
+          const sourceId = typeof data.account === 'object' ? data.account.id : data.account
+          const destinationId =
+            typeof data.destinationAccount === 'object'
+              ? data.destinationAccount.id
+              : data.destinationAccount
+
+          if (sourceId === destinationId) {
+            throw new Error('Source and destination accounts must be different.')
+          }
+        }
+
+        return data
+      },
+    ],
     beforeChange: [
       async ({ data, req, operation }) => {
         if (operation === 'create' && data.source === 'loan' && data.loan) {
