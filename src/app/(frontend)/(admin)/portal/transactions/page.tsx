@@ -79,15 +79,11 @@ export default async function TransactionsPage({ searchParams }: Props) {
     <div>
       <PageBreadcrumb pageTitle="Transactions" />
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <DashboardCard label="Expense" number={formatAmount(expenses)} tone="expense" />
-        <DashboardCard label="Income" number={formatAmount(income)} tone="income" />
-        <DashboardCard label="Balance" number={formatAmount(balance)} tone="balance" />
-        <DashboardCard
-          label="Average Expenses Per Month"
-          number={formatAmount(averageExpensesPerMonth)}
-          tone="bills"
-        />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        <DashboardCard label="Expense" number={formatAmount(expenses)} helper="Expenses and payments this month" tone="expense" />
+        <DashboardCard label="Income" number={formatAmount(income)} helper="Income recorded this month" tone="income" />
+        <DashboardCard label="Balance" number={formatAmount(balance)} helper="Income less expenses" tone="balance" />
+        <DashboardCard label="Average Expenses Per Month" number={formatAmount(averageExpensesPerMonth)} helper="Average since tracking began" tone="bills" />
       </div>
 
       <div className="space-y-6">
