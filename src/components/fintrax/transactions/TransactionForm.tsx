@@ -6,6 +6,7 @@ import Input from '@/components/form/input/InputField'
 import Button from '@/components/ui/button/Button'
 import Select from '@/components/form/Select'
 import { Account, Bill, Loan, Transaction } from '@/payload-types'
+import { ArrowLeftRight } from 'lucide-react'
 
 type TransactionWithDestination = Partial<Transaction> & {
   destinationAccount?: string | Account | null
@@ -50,7 +51,7 @@ export default function TransactionForm({
     amount: initialData?.amount,
     date: toDateInputValue(initialData?.date),
     type: initialData?.type,
-    source: initialData?.source,
+    source: initialData?.type === 'transfer' ? 'account' : initialData?.source,
     account: resolvedInitialAccount,
     destinationAccount: relationshipId(initialData?.destinationAccount as any),
     bill: relationshipId(initialData?.bill as any),
@@ -64,11 +65,24 @@ export default function TransactionForm({
   const [isSaving, setIsSaving] = useState(false)
 
   const requiresFundingAccount = data.type === 'expense' || data.type === 'payment'
+  const sourceAccountId = relationshipId(data.account as any)
+  const destinationAccountId = relationshipId(data.destinationAccount as any)
 
   const accountOptions = accounts.map((account) => ({
     value: account.id,
     label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
   }))
+
+  const swapTransferAccounts = () => {
+    if (!sourceAccountId || !destinationAccountId) return
+
+    setData((current) => ({
+      ...current,
+      source: 'account',
+      account: destinationAccountId,
+      destinationAccount: sourceAccountId,
+    }))
+  }
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -181,28 +195,41 @@ export default function TransactionForm({
             <div>
               <Label>From Account</Label>
               <Select
-                key={`transaction-from-account-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.account as any) ?? ''}
+                key={`transaction-from-account-${initialData?.id ?? 'new'}-${sourceAccountId ?? 'empty'}-${destinationAccountId ?? 'empty'}`}
+                defaultValue={sourceAccountId ?? ''}
                 options={accountOptions}
                 placeholder="Select source account"
-                onChange={(value) => setData({ ...data, account: value || null })}
+                onChange={(value) => setData({ ...data, source: 'account', account: value || null })}
               />
             </div>
             <div>
               <Label>To Account</Label>
               <Select
-                key={`transaction-destination-account-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.destinationAccount as any) ?? ''}
+                key={`transaction-destination-account-${initialData?.id ?? 'new'}-${destinationAccountId ?? 'empty'}-${sourceAccountId ?? 'empty'}`}
+                defaultValue={destinationAccountId ?? ''}
                 options={accounts
-                  .filter((account) => account.id !== relationshipId(data.account as any))
+                  .filter((account) => account.id !== sourceAccountId)
                   .map((account) => ({
                     value: account.id,
                     label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
                   }))}
                 placeholder="Select destination account"
-                onChange={(value) => setData({ ...data, destinationAccount: value || null })}
+                onChange={(value) => setData({ ...data, source: 'account', destinationAccount: value || null })}
               />
             </div>
+
+            <div className="sm:col-span-2 flex justify-center">
+              <button
+                type="button"
+                onClick={swapTransferAccounts}
+                disabled={!sourceAccountId || !destinationAccountId}
+                className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300 dark:hover:bg-blue-500/[0.14]"
+              >
+                <ArrowLeftRight className="h-4 w-4" />
+                Swap accounts
+              </button>
+            </div>
+
             <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300">
               Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
             </div>
