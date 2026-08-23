@@ -55,6 +55,16 @@ export const Accounts: CollectionConfig = {
       type: 'number',
       defaultValue: 0,
       required: true,
+      label: 'Opening Balance',
+    },
+    {
+      name: 'isDefault',
+      type: 'checkbox',
+      defaultValue: false,
+      label: 'Default Account',
+      admin: {
+        description: 'Use this account as the preferred account for future transactions.',
+      },
     },
     {
       name: 'metadata',
