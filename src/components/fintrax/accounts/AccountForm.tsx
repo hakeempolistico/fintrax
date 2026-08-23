@@ -7,13 +7,15 @@ import Input from '@/components/form/input/InputField'
 import Button from '@/components/ui/button/Button'
 import Select from '@/components/form/Select'
 
+type EditableAccount = Account & { isDefault?: boolean }
+
 type AccountFormProps = {
-  account?: Account
+  account?: EditableAccount
   closeModal?: () => void
   handleSave?: (data: any) => Promise<boolean | undefined> | boolean | undefined
 }
 
-const getInitialData = (account?: Account) => ({
+const getInitialData = (account?: EditableAccount) => ({
   name: account?.name ?? '',
   source: account?.source ?? '',
   type: account?.type ?? '',
