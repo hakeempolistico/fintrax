@@ -59,7 +59,7 @@ export const Transactions: CollectionConfig = {
           siblingData?.type === 'expense' ||
           siblingData?.type === 'payment' ||
           siblingData?.type === 'transfer',
-        description: 'The account that funded this transaction.',
+        description: 'Optional account associated with this transaction. If selected, it is used in account balance calculations.',
       },
     },
     {
@@ -155,10 +155,6 @@ export const Transactions: CollectionConfig = {
     beforeValidate: [
       async ({ data }) => {
         if (!data) return data
-
-        if ((data.type === 'expense' || data.type === 'payment') && !data.account) {
-          throw new Error('Expenses and payments require an account to be used.')
-        }
 
         if (data.type === 'transfer') {
           if (!data.account || !data.destinationAccount) {
