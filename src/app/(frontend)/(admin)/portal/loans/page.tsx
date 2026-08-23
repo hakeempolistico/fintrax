@@ -1,16 +1,16 @@
-import FtDashboardCard from '@/app/(frontend)/components/dasboard-card'
+import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import ActionModals from '@/app/(frontend)/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { formatAmount, generateKey } from '@/helper/common.helper'
 import { Loan } from '@/payload-types'
 import { getMe, myPaginatedCollection } from '@/services/app.service'
 import { Metadata } from 'next'
+import { CalendarClock, HandCoins, Landmark } from 'lucide-react'
 import LoanCard from './loan-card'
 
 export const metadata: Metadata = {
-  title: 'Next.js Basic Table | TailAdmin - Next.js Dashboard Template',
-  description:
-    'This is Next.js Basic Table  page for TailAdmin  Tailwind CSS Admin Dashboard Template',
+  title: 'Loans | Fintrax',
+  description: 'Manage and review your Fintrax loans.',
 }
 type Props = {
   searchParams: Promise<{
@@ -18,7 +18,7 @@ type Props = {
     limit?: string
   }>
 }
-export default async function AccountsPage({ searchParams }: Props) {
+export default async function LoansPage({ searchParams }: Props) {
   const me = await getMe()
   const paginated = await myPaginatedCollection<Loan>('loans', 1, 0, [
     {
@@ -41,11 +41,11 @@ export default async function AccountsPage({ searchParams }: Props) {
   return (
     <div>
       <PageBreadcrumb pageTitle="Loans" />
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-4 md:gap-6">
-        <FtDashboardCard label="Total Montly" number={formatAmount(totalMonthlyPayment)} className="!text-brand-500" />
-        <FtDashboardCard label="Total Principal Amount" number={formatAmount(totalPrincipalAmount)} className="text-success-500" />
-        <FtDashboardCard label="Active Loans" number={activeLoansCount.toString()} className="!text-gray-500" />
-        <FtDashboardCard label="Overdue Loans" number={overdueLoansCount.toString()} className="!text-warning-500" />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        <DashboardCard label="Total Monthly" number={formatAmount(totalMonthlyPayment)} helper="Combined scheduled payments" tone="brand" icon={CalendarClock} />
+        <DashboardCard label="Total Principal" number={formatAmount(totalPrincipalAmount)} helper="Across active loans" tone="success" icon={Landmark} />
+        <DashboardCard label="Active Loans" number={activeLoansCount.toString()} helper="Currently being repaid" tone="neutral" icon={HandCoins} />
+        <DashboardCard label="Overdue Loans" number={overdueLoansCount.toString()} helper="Loans needing attention" tone="warning" icon={CalendarClock} />
       </div>
       <div className="space-y-6">
         {rows.map((row) => <LoanCard key={row.id} {...row} />)}
