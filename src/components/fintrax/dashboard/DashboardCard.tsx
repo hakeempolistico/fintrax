@@ -34,7 +34,7 @@ export default function DashboardCard({ label, number, tone = 'balance' }: Dashb
   const Icon = style.icon
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
       <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${style.iconWrap}`}>
         <Icon className="h-5 w-5" />
       </div>
