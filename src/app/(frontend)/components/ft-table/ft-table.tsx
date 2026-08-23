@@ -50,9 +50,10 @@ export type FtTableProps<T = unknown> = {
   rows: FtRow[]
   pagination?: Omit<PaginatedDocs<unknown>, 'docs'>
   edit?: FtEditConfig<T>
+  onRowClick?: (row: FtRow) => void
 }
 
-export default function FtTable<T>({ columns, rows, pagination, edit }: FtTableProps<T>) {
+export default function FtTable<T>({ columns, rows, pagination, edit, onRowClick }: FtTableProps<T>) {
   const router = useRouter()
   const [editingRecord, setEditingRecord] = useState<T | null>(null)
 
@@ -70,7 +71,7 @@ export default function FtTable<T>({ columns, rows, pagination, edit }: FtTableP
         <div className="max-w-full overflow-x-auto">
           <Table className="table-auto">
             <FtHeader columns={columns} hasActions={Boolean(edit)} />
-            <FtBody columns={columns} rows={rows} onEdit={edit ? handleEdit : undefined} />
+            <FtBody columns={columns} rows={rows} onEdit={edit ? handleEdit : undefined} onRowClick={onRowClick} />
           </Table>
         </div>
         {pagination && (
