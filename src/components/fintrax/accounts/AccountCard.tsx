@@ -67,17 +67,7 @@ export default function AccountCard({ account }: AccountCardProps) {
             <p className="truncate text-sm text-gray-500 dark:text-gray-400">{account.source || config.label}</p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/[0.06] dark:text-gray-300">{config.label}</span>
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setIsEditOpen(true) }}
-            title="Edit account"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
-          >
-            <Pencil className="h-4 w-4" />
-          </button>
-        </div>
+        <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-white/[0.06] dark:text-gray-300">{config.label}</span>
       </div>
 
       <div className="mt-6"><p className="text-xs font-medium uppercase tracking-wider text-gray-400">Current balance</p><p className={`mt-1 text-2xl font-bold tracking-tight ${account.currentBalance < 0 ? 'text-error-600 dark:text-error-400' : 'text-gray-900 dark:text-white'}`}>{formatCurrency(account.currentBalance)}</p><p className="mt-1 text-xs text-gray-400">Opening balance {formatCurrency(account.balance ?? 0)}</p></div>
@@ -87,17 +77,14 @@ export default function AccountCard({ account }: AccountCardProps) {
 
     <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} className="max-w-[680px] p-5 lg:p-8">
       <div className="space-y-6">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl ${logo ? 'border border-gray-200 bg-white dark:border-gray-700' : config.bgClass}`}>
-              {logo ? <Image src={logo} alt={`${account.source || account.name} logo`} fill sizes="56px" className="object-contain p-2" /> : <Icon className={`h-7 w-7 ${config.iconClass}`} />}
-            </div>
-            <div>
-              <div className="flex items-center gap-2"><h3 className="text-xl font-semibold text-gray-900 dark:text-white">{account.name}</h3>{account.isDefault && <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">Default</span>}</div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{account.source || config.label}</p>
-            </div>
+        <div className="flex items-center gap-4 pr-12">
+          <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl ${logo ? 'border border-gray-200 bg-white dark:border-gray-700' : config.bgClass}`}>
+            {logo ? <Image src={logo} alt={`${account.source || account.name} logo`} fill sizes="56px" className="object-contain p-2" /> : <Icon className={`h-7 w-7 ${config.iconClass}`} />}
           </div>
-          <button type="button" onClick={openEditFromView} className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"><Pencil className="h-4 w-4" />Edit Account</button>
+          <div>
+            <div className="flex items-center gap-2"><h3 className="text-xl font-semibold text-gray-900 dark:text-white">{account.name}</h3>{account.isDefault && <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">Default</span>}</div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{account.source || config.label}</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -139,6 +126,10 @@ export default function AccountCard({ account }: AccountCardProps) {
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">No linked transactions yet.</div>
           )}
+        </div>
+
+        <div className="flex justify-end border-t border-gray-100 pt-5 dark:border-gray-800">
+          <button type="button" onClick={openEditFromView} className="inline-flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 transition hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"><Pencil className="h-4 w-4" />Edit Account</button>
         </div>
       </div>
     </Modal>
