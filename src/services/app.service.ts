@@ -4,6 +4,10 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Account, Bill, Member, Transaction } from '@/payload-types'
 
+type TransactionWithDestination = Transaction & {
+  destinationAccount?: string | Account | null
+}
+
 export type AccountWithBalance = Account & {
   isDefault?: boolean
   currentBalance: number
@@ -11,68 +15,42 @@ export type AccountWithBalance = Account & {
   totalOut: number
   transactionCount: number
   lastTransactionDate?: string
-}
-
-type TransactionWithDestination = Transaction & {
-  destinationAccount?: string | Account | null
+  recentTransactions: TransactionWithDestination[]
 }
 
 export const requireMember = async () => {
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({
-    headers: await headers(),
-  })
-
-  if (!user) {
-    return redirect('/signin')
-  }
+  const { user } = await payload.auth({ headers: await headers() })
+  if (!user) return redirect('/signin')
 }
 
 export const getCurrentUser = async (): Promise<Member | null> => {
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({
-    headers: await headers(),
-  })
-
+  const { user } = await payload.auth({ headers: await headers() })
   return user as Member
 }
 
 export const getMe = async (): Promise<Member> => {
   const payload = await getPayload({ config })
-  const { user } = await payload.auth({
-    headers: await headers(),
-  })
-
-  if (!user || user.collection !== 'members') {
-    return redirect('/signin')
-  }
-
+  const { user } = await payload.auth({ headers: await headers() })
+  if (!user || user.collection !== 'members') return redirect('/signin')
   return user as Member
 }
 
 export const myAccounts = async (): Promise<Account[]> => {
   const me = await getMe()
   const payload = await getPayload({ config })
-
   const { docs } = await payload.find({
     collection: 'accounts',
     pagination: false,
-    where: {
-      member: {
-        equals: me.id,
-      },
-    },
+    where: { member: { equals: me.id } },
   })
-
   return docs
 }
 
 export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> => {
   const accounts = await myAccounts()
-
-  if (accounts.length === 0) {
-    return []
-  }
+  if (accounts.length === 0) return []
 
   const payload = await getPayload({ config })
   const accountIds = accounts.map((account) => account.id)
@@ -101,18 +79,21 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
         totalIn: 0,
         totalOut: 0,
         transactionCount: 0,
+        recentTransactions: [],
       },
     ]),
   )
 
   transactions.forEach((transaction) => {
-    const sourceAccountId =
-      typeof transaction.account === 'string' ? transaction.account : transaction.account?.id
-    const destinationAccountId =
-      typeof transaction.destinationAccount === 'string'
-        ? transaction.destinationAccount
-        : transaction.destinationAccount?.id
+    const sourceAccountId = typeof transaction.account === 'string' ? transaction.account : transaction.account?.id
+    const destinationAccountId = typeof transaction.destinationAccount === 'string' ? transaction.destinationAccount : transaction.destinationAccount?.id
     const amount = transaction.amount ?? 0
+
+    const addRecent = (accountId?: string) => {
+      if (!accountId) return
+      const summary = summaries.get(accountId)
+      if (summary && summary.recentTransactions.length < 5) summary.recentTransactions.push(transaction)
+    }
 
     if (transaction.type === 'transfer') {
       if (sourceAccountId) {
@@ -121,6 +102,7 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
           source.currentBalance -= amount
           source.transactionCount += 1
           source.lastTransactionDate ??= transaction.date
+          addRecent(sourceAccountId)
         }
       }
 
@@ -130,23 +112,19 @@ export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> =>
           destination.currentBalance += amount
           destination.transactionCount += 1
           destination.lastTransactionDate ??= transaction.date
+          addRecent(destinationAccountId)
         }
       }
-
       return
     }
 
-    if (!sourceAccountId) {
-      return
-    }
-
+    if (!sourceAccountId) return
     const summary = summaries.get(sourceAccountId)
-    if (!summary) {
-      return
-    }
+    if (!summary) return
 
     summary.transactionCount += 1
     summary.lastTransactionDate ??= transaction.date
+    addRecent(sourceAccountId)
 
     if (transaction.type === 'income') {
       summary.totalIn += amount
@@ -178,23 +156,13 @@ export const myPaginatedCollection = async <T>(
     page,
     limit,
     sort,
-    where: {
-      member: {
-        equals: me.id,
-      },
-    },
+    where: { member: { equals: me.id } },
   })
 
-  if (relationships.length === 0) {
-    return result as PaginatedDocs<T>
-  }
+  if (relationships.length === 0) return result as PaginatedDocs<T>
 
   const docs = await attachRelationships(result.docs, relationships)
-
-  return {
-    ...result,
-    docs,
-  } as PaginatedDocs<T>
+  return { ...result, docs } as PaginatedDocs<T>
 }
 
 type RelationshipConfig = {
@@ -204,31 +172,20 @@ type RelationshipConfig = {
   sort?: string
 }
 
-export const attachRelationships = async <T>(
-  docs: T[],
-  relationships: RelationshipConfig[],
-): Promise<T[]> => {
+export const attachRelationships = async <T>(docs: T[], relationships: RelationshipConfig[]): Promise<T[]> => {
   const payload = await getPayload({ config })
 
   return Promise.all(
     docs.map(async (doc) => {
-      const updatedDoc = {
-        ...(doc as object),
-      } as Record<string, unknown>
-
+      const updatedDoc = { ...(doc as object) } as Record<string, unknown>
       for (const relationship of relationships) {
         const related = await payload.find({
           collection: relationship.collection,
-          where: {
-            [relationship.foreignKey]: {
-              equals: (doc as { id: string }).id,
-            },
-          },
+          where: { [relationship.foreignKey]: { equals: (doc as { id: string }).id } },
           pagination: false,
         })
         updatedDoc[relationship.name] = related.docs
       }
-
       return updatedDoc as T
     }),
   )
@@ -244,60 +201,31 @@ export const getTransactionsThisMonth = async (memberId?: string) => {
     pagination: false,
     where: {
       and: [
-        ...(memberId
-          ? [
-              {
-                member: {
-                  equals: memberId,
-                },
-              },
-            ]
-          : []),
-        {
-          date: {
-            greater_than_equal: startOfMonth.toISOString(),
-          },
-        },
-        {
-          date: {
-            less_than: startOfNextMonth.toISOString(),
-          },
-        },
+        ...(memberId ? [{ member: { equals: memberId } }] : []),
+        { date: { greater_than_equal: startOfMonth.toISOString() } },
+        { date: { less_than: startOfNextMonth.toISOString() } },
       ],
     },
   })
-
   return docs
 }
 
-export const getTotalExpensesAndPayments = (transactions: Transaction[]) => {
-  return transactions
+export const getTotalExpensesAndPayments = (transactions: Transaction[]) =>
+  transactions
     .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
     .reduce((total, transaction) => total + (transaction.amount ?? 0), 0)
-}
 
 export const getAverageMonthlyExpenses = (transactions: Transaction[]) => {
   const monthlyTotals = new Map<string, number>()
-
   transactions.forEach((transaction) => {
-    if (transaction.type !== 'expense' && transaction.type !== 'payment') {
-      return
-    }
-
+    if (transaction.type !== 'expense' && transaction.type !== 'payment') return
     const date = new Date(transaction.date)
-    if (date.getFullYear() < 2026 || (date.getFullYear() === 2026 && date.getMonth() + 1 < 8)) {
-      return
-    }
-
+    if (date.getFullYear() < 2026 || (date.getFullYear() === 2026 && date.getMonth() + 1 < 8)) return
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`
     monthlyTotals.set(monthKey, (monthlyTotals.get(monthKey) ?? 0) + (transaction.amount ?? 0))
   })
 
-  if (monthlyTotals.size === 0) {
-    return 0
-  }
-
+  if (monthlyTotals.size === 0) return 0
   const total = Array.from(monthlyTotals.values()).reduce((sum, amount) => sum + amount, 0)
-
   return total / monthlyTotals.size
 }
