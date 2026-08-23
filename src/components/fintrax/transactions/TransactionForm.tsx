@@ -57,6 +57,11 @@ export default function TransactionForm({
 
   const requiresFundingAccount = data.type === 'expense' || data.type === 'payment'
 
+  const accountOptions = accounts.map((account) => ({
+    value: account.id,
+    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
+  }))
+
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
@@ -108,30 +113,7 @@ export default function TransactionForm({
       </h4>
 
       <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
-        <div>
-          <Label>Amount</Label>
-          <Input
-            defaultValue={data.amount ?? ''}
-            onChange={(e) => setData({ ...data, amount: Number(e.target.value) })}
-            type="number"
-            placeholder="0.00"
-            name="amount"
-            min="0"
-            step={0.01}
-          />
-        </div>
-
-        <div>
-          <Label>Transaction Date</Label>
-          <Input
-            defaultValue={String(data.date ?? '')}
-            type="date"
-            name="date"
-            onChange={(e) => setData({ ...data, date: e.target.value })}
-          />
-        </div>
-
-        <div>
+        <div className={requiresFundingAccount ? '' : 'sm:col-span-2'}>
           <Label>Type</Label>
           <Select
             key={`transaction-type-${initialData?.id ?? 'new'}`}
@@ -171,6 +153,78 @@ export default function TransactionForm({
           />
         </div>
 
+        {requiresFundingAccount && (
+          <div>
+            <Label>Account Used</Label>
+            <Select
+              key={`transaction-account-top-${initialData?.id ?? 'new'}-${data.type}`}
+              defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+              options={accountOptions}
+              placeholder="Select account used"
+              onChange={(value) => setData({ ...data, account: value })}
+            />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              This amount will be deducted from the selected account balance.
+            </p>
+          </div>
+        )}
+
+        {data.type === 'transfer' && (
+          <>
+            <div>
+              <Label>From Account</Label>
+              <Select
+                key={`transaction-from-account-${initialData?.id ?? 'new'}`}
+                defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+                options={accountOptions}
+                placeholder="Select source account"
+                onChange={(value) => setData({ ...data, account: value })}
+              />
+            </div>
+            <div>
+              <Label>To Account</Label>
+              <Select
+                key={`transaction-destination-account-${initialData?.id ?? 'new'}`}
+                defaultValue={relationshipId(data.destinationAccount as any) ?? ''}
+                options={accounts
+                  .filter((account) => account.id !== relationshipId(data.account as any))
+                  .map((account) => ({
+                    value: account.id,
+                    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
+                  }))}
+                placeholder="Select destination account"
+                onChange={(value) => setData({ ...data, destinationAccount: value })}
+              />
+            </div>
+            <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300">
+              Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
+            </div>
+          </>
+        )}
+
+        <div>
+          <Label>Amount</Label>
+          <Input
+            defaultValue={data.amount ?? ''}
+            onChange={(e) => setData({ ...data, amount: Number(e.target.value) })}
+            type="number"
+            placeholder="0.00"
+            name="amount"
+            min="0"
+            step={0.01}
+          />
+        </div>
+
+        <div>
+          <Label>Transaction Date</Label>
+          <Input
+            defaultValue={String(data.date ?? '')}
+            type="date"
+            name="date"
+            onChange={(e) => setData({ ...data, date: e.target.value })}
+          />
+        </div>
+
         {data.type !== 'transfer' && (
           <div>
             <Label>Source</Label>
@@ -201,63 +255,17 @@ export default function TransactionForm({
           </div>
         )}
 
-        {data.type === 'transfer' ? (
-          <>
-            <div>
-              <Label>From Account</Label>
-              <Select
-                key={`transaction-from-account-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
-                options={accounts.map((account) => ({
-                  value: account.id,
-                  label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
-                }))}
-                placeholder="Select source account"
-                onChange={(value) => setData({ ...data, account: value })}
-              />
-            </div>
-            <div>
-              <Label>To Account</Label>
-              <Select
-                key={`transaction-destination-account-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.destinationAccount as any) ?? ''}
-                options={accounts
-                  .filter((account) => account.id !== relationshipId(data.account as any))
-                  .map((account) => ({
-                    value: account.id,
-                    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
-                  }))}
-                placeholder="Select destination account"
-                onChange={(value) => setData({ ...data, destinationAccount: value })}
-              />
-            </div>
-            <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300">
-              Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
-            </div>
-          </>
-        ) : (
-          <>
-            {(requiresFundingAccount || data.source === 'account') && (
-              <div>
-                <Label>{requiresFundingAccount ? 'Account Used' : 'Account'}</Label>
-                <Select
-                  key={`transaction-account-${initialData?.id ?? 'new'}-${data.type ?? 'type'}`}
-                  defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
-                  options={accounts.map((account) => ({
-                    value: account.id,
-                    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
-                  }))}
-                  placeholder={requiresFundingAccount ? 'Select account used' : 'Select account'}
-                  onChange={(value) => setData({ ...data, account: value })}
-                />
-                {requiresFundingAccount && (
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    This amount will be deducted from the selected account balance.
-                  </p>
-                )}
-              </div>
-            )}
-          </>
+        {data.type !== 'transfer' && !requiresFundingAccount && data.source === 'account' && (
+          <div>
+            <Label>Account</Label>
+            <Select
+              key={`transaction-account-${initialData?.id ?? 'new'}-${data.type ?? 'type'}`}
+              defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+              options={accountOptions}
+              placeholder="Select account"
+              onChange={(value) => setData({ ...data, account: value })}
+            />
+          </div>
         )}
 
         {data.type !== 'transfer' && data.source === 'bill' && (
