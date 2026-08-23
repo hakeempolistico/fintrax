@@ -37,13 +37,20 @@ export default function TransactionForm({
   initialData,
 }: TransactionFormProps) {
   const defaultAccount = accounts.find((account) => (account as Account & { isDefault?: boolean }).isDefault)
+  const initialType = initialData?.type
+  const initialAccountId = relationshipId(initialData?.account as any)
+  const resolvedInitialAccount =
+    initialAccountId ??
+    (initialType === 'expense' || initialType === 'payment' || initialType === 'transfer'
+      ? defaultAccount?.id
+      : undefined)
 
   const [data, setData] = useState<TransactionWithDestination>(() => ({
     amount: initialData?.amount,
     date: toDateInputValue(initialData?.date),
     type: initialData?.type,
     source: initialData?.source,
-    account: relationshipId(initialData?.account as any),
+    account: resolvedInitialAccount,
     destinationAccount: relationshipId(initialData?.destinationAccount as any),
     bill: relationshipId(initialData?.bill as any),
     billPaymentFor: toMonthInputValue(initialData?.billPaymentFor),
@@ -89,6 +96,11 @@ export default function TransactionForm({
     try {
       const payload: TransactionWithDestination = {
         ...data,
+        account:
+          relationshipId(data.account as any) ??
+          ((data.type === 'expense' || data.type === 'payment' || data.type === 'transfer')
+            ? defaultAccount?.id
+            : undefined),
         source: data.type === 'transfer' ? 'account' : data.source,
         category: data.type === 'transfer' ? undefined : data.category,
         paymentMethod: data.type === 'transfer' ? 'bank-transfer' : data.paymentMethod,
@@ -158,7 +170,7 @@ export default function TransactionForm({
             <Label>Account Used</Label>
             <Select
               key={`transaction-account-top-${initialData?.id ?? 'new'}-${data.type}`}
-              defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+              defaultValue={relationshipId(data.account as any) ?? ''}
               options={accountOptions}
               placeholder="Select account used"
               onChange={(value) => setData({ ...data, account: value })}
@@ -175,7 +187,7 @@ export default function TransactionForm({
               <Label>From Account</Label>
               <Select
                 key={`transaction-from-account-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+                defaultValue={relationshipId(data.account as any) ?? ''}
                 options={accountOptions}
                 placeholder="Select source account"
                 onChange={(value) => setData({ ...data, account: value })}
