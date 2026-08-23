@@ -7,14 +7,18 @@ import Button from '@/components/ui/button/Button'
 import Select from '@/components/form/Select'
 import { Account, Bill, Loan, Transaction } from '@/payload-types'
 
+type TransactionWithDestination = Partial<Transaction> & {
+  destinationAccount?: string | Account | null
+}
+
 type TransactionFormProps = {
   closeModal?: () => void
-  handleSave?: (data: Partial<Transaction>) => Promise<boolean | void> | boolean | void
+  handleSave?: (data: TransactionWithDestination) => Promise<boolean | void> | boolean | void
   bills?: Bill[]
   accounts?: Account[]
   loans?: Loan[]
   mode?: 'create' | 'edit'
-  initialData?: Partial<Transaction>
+  initialData?: TransactionWithDestination
 }
 
 const relationshipId = (value: string | { id: string } | null | undefined) =>
@@ -32,12 +36,15 @@ export default function TransactionForm({
   mode = 'create',
   initialData,
 }: TransactionFormProps) {
-  const [data, setData] = useState<Partial<Transaction>>(() => ({
+  const defaultAccount = accounts.find((account) => (account as Account & { isDefault?: boolean }).isDefault)
+
+  const [data, setData] = useState<TransactionWithDestination>(() => ({
     amount: initialData?.amount,
     date: toDateInputValue(initialData?.date),
     type: initialData?.type,
     source: initialData?.source,
     account: relationshipId(initialData?.account as any),
+    destinationAccount: relationshipId(initialData?.destinationAccount as any),
     bill: relationshipId(initialData?.bill as any),
     billPaymentFor: toMonthInputValue(initialData?.billPaymentFor),
     loan: relationshipId(initialData?.loan as any),
@@ -50,12 +57,33 @@ export default function TransactionForm({
 
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (data.type === 'transfer') {
+      const fromAccount = relationshipId(data.account as any)
+      const toAccount = relationshipId(data.destinationAccount as any)
+
+      if (!fromAccount || !toAccount) {
+        alert('Please select both the source and destination accounts.')
+        return
+      }
+
+      if (fromAccount === toAccount) {
+        alert('Source and destination accounts must be different.')
+        return
+      }
+    }
+
     setIsSaving(true)
     try {
-      const payload = {
+      const payload: TransactionWithDestination = {
         ...data,
+        source: data.type === 'transfer' ? 'account' : data.source,
+        category: data.type === 'transfer' ? undefined : data.category,
+        paymentMethod: data.type === 'transfer' ? 'bank-transfer' : data.paymentMethod,
+        bill: data.type === 'transfer' ? undefined : data.bill,
+        loan: data.type === 'transfer' ? undefined : data.loan,
         billPaymentFor:
-          data.source === 'bill' && data.billPaymentFor
+          data.type !== 'transfer' && data.source === 'bill' && data.billPaymentFor
             ? `${String(data.billPaymentFor).slice(0, 7)}-01`
             : undefined,
       }
@@ -108,41 +136,96 @@ export default function TransactionForm({
               { value: 'transfer', label: 'Transfer' },
             ]}
             placeholder="Select transaction type"
-            onChange={(value) => setData({ ...data, type: value as Transaction['type'] })}
+            onChange={(value) => {
+              const nextType = value as Transaction['type']
+              if (nextType === 'transfer') {
+                setData({
+                  ...data,
+                  type: nextType,
+                  source: 'account',
+                  account: relationshipId(data.account as any) ?? defaultAccount?.id,
+                  destinationAccount: undefined,
+                  bill: undefined,
+                  billPaymentFor: undefined,
+                  loan: undefined,
+                  category: undefined,
+                  paymentMethod: 'bank-transfer',
+                })
+                return
+              }
+
+              setData({ ...data, type: nextType, destinationAccount: undefined })
+            }}
           />
         </div>
 
-        <div>
-          <Label>Source</Label>
-          <Select
-            key={`transaction-source-${initialData?.id ?? 'new'}`}
-            defaultValue={data.source ?? ''}
-            options={[
-              { value: 'account', label: 'Account' },
-              { value: 'bill', label: 'Bill' },
-              { value: 'loan', label: 'Loan' },
-              { value: 'other', label: 'Other' },
-            ]}
-            placeholder="Select source"
-            onChange={(value) =>
-              setData({
-                ...data,
-                source: value as Transaction['source'],
-                account: undefined,
-                bill: undefined,
-                billPaymentFor: undefined,
-                loan: undefined,
-              })
-            }
-          />
-        </div>
+        {data.type !== 'transfer' && (
+          <div>
+            <Label>Source</Label>
+            <Select
+              key={`transaction-source-${initialData?.id ?? 'new'}`}
+              defaultValue={data.source ?? ''}
+              options={[
+                { value: 'account', label: 'Account' },
+                { value: 'bill', label: 'Bill' },
+                { value: 'loan', label: 'Loan' },
+                { value: 'other', label: 'Other' },
+              ]}
+              placeholder="Select source"
+              onChange={(value) =>
+                setData({
+                  ...data,
+                  source: value as Transaction['source'],
+                  account: value === 'account' ? defaultAccount?.id : undefined,
+                  bill: undefined,
+                  billPaymentFor: undefined,
+                  loan: undefined,
+                })
+              }
+            />
+          </div>
+        )}
 
-        {data.source === 'account' && (
+        {data.type === 'transfer' ? (
+          <>
+            <div>
+              <Label>From Account</Label>
+              <Select
+                key={`transaction-from-account-${initialData?.id ?? 'new'}`}
+                defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+                options={accounts.map((account) => ({
+                  value: account.id,
+                  label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
+                }))}
+                placeholder="Select source account"
+                onChange={(value) => setData({ ...data, account: value })}
+              />
+            </div>
+            <div>
+              <Label>To Account</Label>
+              <Select
+                key={`transaction-destination-account-${initialData?.id ?? 'new'}`}
+                defaultValue={relationshipId(data.destinationAccount as any) ?? ''}
+                options={accounts
+                  .filter((account) => account.id !== relationshipId(data.account as any))
+                  .map((account) => ({
+                    value: account.id,
+                    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
+                  }))}
+                placeholder="Select destination account"
+                onChange={(value) => setData({ ...data, destinationAccount: value })}
+              />
+            </div>
+            <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300">
+              Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
+            </div>
+          </>
+        ) : data.source === 'account' ? (
           <div>
             <Label>Account</Label>
             <Select
               key={`transaction-account-${initialData?.id ?? 'new'}`}
-              defaultValue={relationshipId(data.account as any) ?? ''}
+              defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
               options={accounts.map((account) => ({
                 value: account.id,
                 label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
@@ -151,9 +234,9 @@ export default function TransactionForm({
               onChange={(value) => setData({ ...data, account: value })}
             />
           </div>
-        )}
+        ) : null}
 
-        {data.source === 'bill' && (
+        {data.type !== 'transfer' && data.source === 'bill' && (
           <>
             <div>
               <Label>Bill</Label>
@@ -178,7 +261,7 @@ export default function TransactionForm({
           </>
         )}
 
-        {data.source === 'loan' && (
+        {data.type !== 'transfer' && data.source === 'loan' && (
           <div>
             <Label>Loan</Label>
             <Select
@@ -191,51 +274,55 @@ export default function TransactionForm({
           </div>
         )}
 
-        <div>
-          <Label>Category</Label>
-          <Select
-            key={`transaction-category-${initialData?.id ?? 'new'}`}
-            defaultValue={data.category ?? ''}
-            options={[
-              { value: 'salary', label: 'Salary' },
-              { value: 'food', label: 'Food' },
-              { value: 'transportation', label: 'Transportation' },
-              { value: 'shopping', label: 'Shopping' },
-              { value: 'utilities', label: 'Utilities' },
-              { value: 'rent', label: 'Rent' },
-              { value: 'insurance', label: 'Insurance' },
-              { value: 'loan-payment', label: 'Loan Payment' },
-              { value: 'bill-payment', label: 'Bill Payment' },
-              { value: 'entertainment', label: 'Entertainment' },
-              { value: 'healthcare', label: 'Healthcare' },
-              { value: 'education', label: 'Education' },
-              { value: 'travel', label: 'Travel' },
-              { value: 'other', label: 'Other' },
-            ]}
-            placeholder="Select category"
-            onChange={(value) => setData({ ...data, category: value as Transaction['category'] })}
-          />
-        </div>
+        {data.type !== 'transfer' && (
+          <div>
+            <Label>Category</Label>
+            <Select
+              key={`transaction-category-${initialData?.id ?? 'new'}`}
+              defaultValue={data.category ?? ''}
+              options={[
+                { value: 'salary', label: 'Salary' },
+                { value: 'food', label: 'Food' },
+                { value: 'transportation', label: 'Transportation' },
+                { value: 'shopping', label: 'Shopping' },
+                { value: 'utilities', label: 'Utilities' },
+                { value: 'rent', label: 'Rent' },
+                { value: 'insurance', label: 'Insurance' },
+                { value: 'loan-payment', label: 'Loan Payment' },
+                { value: 'bill-payment', label: 'Bill Payment' },
+                { value: 'entertainment', label: 'Entertainment' },
+                { value: 'healthcare', label: 'Healthcare' },
+                { value: 'education', label: 'Education' },
+                { value: 'travel', label: 'Travel' },
+                { value: 'other', label: 'Other' },
+              ]}
+              placeholder="Select category"
+              onChange={(value) => setData({ ...data, category: value as Transaction['category'] })}
+            />
+          </div>
+        )}
 
-        <div>
-          <Label>Payment Method</Label>
-          <Select
-            key={`payment-method-${initialData?.id ?? 'new'}`}
-            defaultValue={data.paymentMethod ?? ''}
-            options={[
-              { value: 'cash', label: 'Cash' },
-              { value: 'bank-transfer', label: 'Bank Transfer' },
-              { value: 'credit-card', label: 'Credit Card' },
-              { value: 'debit-card', label: 'Debit Card' },
-              { value: 'direct-debit', label: 'Direct Debit' },
-              { value: 'other', label: 'Other' },
-            ]}
-            placeholder="Select payment method"
-            onChange={(value) =>
-              setData({ ...data, paymentMethod: value as Transaction['paymentMethod'] })
-            }
-          />
-        </div>
+        {data.type !== 'transfer' && (
+          <div>
+            <Label>Payment Method</Label>
+            <Select
+              key={`payment-method-${initialData?.id ?? 'new'}`}
+              defaultValue={data.paymentMethod ?? ''}
+              options={[
+                { value: 'cash', label: 'Cash' },
+                { value: 'bank-transfer', label: 'Bank Transfer' },
+                { value: 'credit-card', label: 'Credit Card' },
+                { value: 'debit-card', label: 'Debit Card' },
+                { value: 'direct-debit', label: 'Direct Debit' },
+                { value: 'other', label: 'Other' },
+              ]}
+              placeholder="Select payment method"
+              onChange={(value) =>
+                setData({ ...data, paymentMethod: value as Transaction['paymentMethod'] })
+              }
+            />
+          </div>
+        )}
 
         <div>
           <Label>Reference</Label>
