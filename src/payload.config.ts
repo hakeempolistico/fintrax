@@ -1,4 +1,5 @@
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { importExportPlugin } from '@payloadcms/plugin-import-export'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -17,6 +18,18 @@ import { Transactions } from './collections/Transactions'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const importExportCollections = ['members', 'accounts', 'bills', 'loans', 'transactions'].map(
+  (slug) => ({
+    slug,
+    export: {
+      disableJobsQueue: true,
+    },
+    import: {
+      disableJobsQueue: true,
+    },
+  }),
+)
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -34,6 +47,24 @@ export default buildConfig({
     url: process.env.DATABASE_URL || '',
   }),
   sharp,
-  plugins: [],
+  plugins: [
+    importExportPlugin({
+      collections: importExportCollections,
+      overrideExportCollection: ({ collection }) => ({
+        ...collection,
+        admin: {
+          ...collection.admin,
+          group: 'Data Management',
+        },
+      }),
+      overrideImportCollection: ({ collection }) => ({
+        ...collection,
+        admin: {
+          ...collection.admin,
+          group: 'Data Management',
+        },
+      }),
+    }),
+  ],
   endpoints: [AICaptureEndpoint],
 })
