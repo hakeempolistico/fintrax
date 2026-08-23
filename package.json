@@ -28,6 +28,7 @@
     "@payloadcms/next": "3.87.1",
     "@payloadcms/plugin-import-export": "3.87.1",
     "@payloadcms/richtext-lexical": "3.87.1",
+    "@payloadcms/storage-vercel-blob": "3.87.1",
     "@payloadcms/ui": "3.87.1",
     "@react-jvectormap/core": "^1.0.4",
     "@react-jvectormap/world": "^1.1.2",
