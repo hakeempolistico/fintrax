@@ -51,7 +51,6 @@ export default function SettingsPage() {
       body: JSON.stringify({
         firstName: String(form.get('firstName') ?? '').trim(),
         lastName: String(form.get('lastName') ?? '').trim(),
-        email: String(form.get('email') ?? '').trim(),
       }),
     })
     const data = await response.json().catch(() => ({}))
@@ -144,7 +143,11 @@ export default function SettingsPage() {
             <div><Label>First name</Label><Input name="firstName" defaultValue={member.firstName} /></div>
             <div><Label>Last name</Label><Input name="lastName" defaultValue={member.lastName} /></div>
           </div>
-          <div><Label>Email</Label><Input name="email" type="email" defaultValue={member.email} /></div>
+          <div>
+            <Label>Email</Label>
+            <Input type="email" value={member.email} disabled />
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed from Settings.</p>
+          </div>
           {profileMessage && <p className="text-sm text-gray-600 dark:text-gray-300">{profileMessage}</p>}
           <div className="flex justify-end"><Button size="sm" disabled={savingProfile}>{savingProfile ? 'Saving...' : 'Save changes'}</Button></div>
         </form>
