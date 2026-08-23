@@ -1,4 +1,5 @@
 import AccountCard from '@/components/fintrax/accounts/AccountCard'
+import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import ActionModals from '@/components/fintrax/modals/ActionModals'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { getMe, myAccountsWithBalances } from '@/services/app.service'
@@ -19,13 +20,6 @@ export default async function AccountsPage() {
   const totalOut = accounts.reduce((sum, account) => sum + account.totalOut, 0)
   const transactionCount = accounts.reduce((sum, account) => sum + account.transactionCount, 0)
 
-  const stats = [
-    { label: 'Total balance', value: formatCurrency(totalBalance), helper: 'Across all accounts', icon: WalletCards, iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400', valueClass: 'text-emerald-700 dark:text-emerald-400' },
-    { label: 'Accounts', value: String(accounts.length), helper: 'Connected money sources', icon: Landmark, iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400', valueClass: 'text-blue-700 dark:text-blue-400' },
-    { label: 'Money out', value: formatCurrency(totalOut), helper: 'Recorded account outflow', icon: TrendingDown, iconClass: 'bg-rose-100 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400', valueClass: 'text-rose-700 dark:text-rose-400' },
-    { label: 'Transactions', value: String(transactionCount), helper: 'Linked to your accounts', icon: ReceiptText, iconClass: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-400', valueClass: 'text-violet-700 dark:text-violet-400' },
-  ]
-
   return (
     <div>
       <PageBreadcrumb pageTitle="Accounts" />
@@ -38,16 +32,10 @@ export default async function AccountsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {stats.map(({ label, value, helper, icon: Icon, iconClass, valueClass }) => (
-              <div key={label} className="rounded-2xl border border-gray-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03]">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{label}</p>
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconClass}`}><Icon className="h-5 w-5" /></div>
-                </div>
-                <p className={`mt-4 truncate text-xl font-bold ${valueClass}`}>{value}</p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helper}</p>
-              </div>
-            ))}
+            <DashboardCard label="Total balance" number={formatCurrency(totalBalance)} helper="Across all accounts" tone="success" icon={WalletCards} />
+            <DashboardCard label="Accounts" number={String(accounts.length)} helper="Connected money sources" tone="brand" icon={Landmark} />
+            <DashboardCard label="Money out" number={formatCurrency(totalOut)} helper="Recorded account outflow" tone="danger" icon={TrendingDown} />
+            <DashboardCard label="Transactions" number={String(transactionCount)} helper="Linked to your accounts" tone="violet" icon={ReceiptText} />
           </div>
         </section>
 
