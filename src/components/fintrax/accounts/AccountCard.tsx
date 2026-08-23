@@ -75,7 +75,7 @@ export default function AccountCard({ account }: AccountCardProps) {
       <div className="mt-4 flex items-center justify-between gap-3 text-xs text-gray-400"><span>{maskAccountNumber(account.accountNumber)}</span><span>{account.transactionCount} {account.transactionCount === 1 ? 'transaction' : 'transactions'}</span></div>
     </div>
 
-    <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} className="max-w-[680px] p-5 lg:p-8">
+    <Modal isOpen={isViewOpen} onClose={() => setIsViewOpen(false)} className="max-h-[calc(100vh-2rem)] max-w-[680px] overflow-y-auto p-5 lg:p-8">
       <div className="space-y-6">
         <div className="flex items-center gap-4 pr-12">
           <div className={`relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl ${logo ? 'border border-gray-200 bg-white dark:border-gray-700' : config.bgClass}`}>
