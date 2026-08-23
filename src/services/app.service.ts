@@ -4,6 +4,14 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Account, Bill, Member, Transaction } from '@/payload-types'
 
+export type AccountWithBalance = Account & {
+  currentBalance: number
+  totalIn: number
+  totalOut: number
+  transactionCount: number
+  lastTransactionDate?: string
+}
+
 export const requireMember = async () => {
   const payload = await getPayload({ config })
   const { user } = await payload.auth({
@@ -43,7 +51,7 @@ export const myAccounts = async (): Promise<Account[]> => {
 
   const { docs } = await payload.find({
     collection: 'accounts',
-
+    pagination: false,
     where: {
       member: {
         equals: me.id,
@@ -52,6 +60,77 @@ export const myAccounts = async (): Promise<Account[]> => {
   })
 
   return docs
+}
+
+export const myAccountsWithBalances = async (): Promise<AccountWithBalance[]> => {
+  const accounts = await myAccounts()
+
+  if (accounts.length === 0) {
+    return []
+  }
+
+  const payload = await getPayload({ config })
+  const accountIds = accounts.map((account) => account.id)
+
+  const { docs: transactions } = await payload.find({
+    collection: 'transactions',
+    depth: 0,
+    pagination: false,
+    sort: '-date',
+    where: {
+      account: {
+        in: accountIds,
+      },
+    },
+  })
+
+  const summaries = new Map<string, AccountWithBalance>(
+    accounts.map((account) => [
+      account.id,
+      {
+        ...account,
+        currentBalance: account.balance ?? 0,
+        totalIn: 0,
+        totalOut: 0,
+        transactionCount: 0,
+      },
+    ]),
+  )
+
+  transactions.forEach((transaction) => {
+    const accountId =
+      typeof transaction.account === 'string' ? transaction.account : transaction.account?.id
+
+    if (!accountId) {
+      return
+    }
+
+    const summary = summaries.get(accountId)
+    if (!summary) {
+      return
+    }
+
+    const amount = transaction.amount ?? 0
+    summary.transactionCount += 1
+    summary.lastTransactionDate ??= transaction.date
+
+    if (transaction.type === 'income') {
+      summary.totalIn += amount
+      summary.currentBalance += amount
+      return
+    }
+
+    if (
+      transaction.type === 'expense' ||
+      transaction.type === 'payment' ||
+      transaction.type === 'transfer'
+    ) {
+      summary.totalOut += amount
+      summary.currentBalance -= amount
+    }
+  })
+
+  return accounts.map((account) => summaries.get(account.id) as AccountWithBalance)
 }
 
 export const myPaginatedCollection = async <T>(
@@ -163,9 +242,7 @@ export const getTransactionsThisMonth = async (memberId?: string) => {
 
 export const getTotalExpensesAndPayments = (transactions: Transaction[]) => {
   return transactions
-
     .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
-
     .reduce((total, transaction) => total + (transaction.amount ?? 0), 0)
 }
 
