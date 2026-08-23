@@ -156,7 +156,9 @@ export default function SettingsPage() {
           </div>
           <div>
             <Label>Email</Label>
-            <Input type="email" value={member.email} disabled />
+            <div className="flex h-11 w-full items-center rounded-lg border border-gray-300 bg-gray-100 px-4 text-sm text-gray-600 shadow-theme-xs dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+              {member.email}
+            </div>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Email cannot be changed from Settings.</p>
           </div>
           {profileMessage.text && <p className={messageClass(profileMessage.type)}>{profileMessage.text}</p>}
