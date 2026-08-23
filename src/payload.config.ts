@@ -28,6 +28,12 @@ const synchronousImportExport = {
   },
 } as const
 
+const blobCollections = {
+  media: true,
+  exports: true,
+  imports: true,
+} as any
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -46,15 +52,6 @@ export default buildConfig({
   }),
   sharp,
   plugins: [
-    vercelBlobStorage({
-      collections: {
-        media: true,
-        exports: true,
-        imports: true,
-      },
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-      clientUploads: true,
-    }),
     importExportPlugin({
       collections: [
         { slug: 'members', ...synchronousImportExport },
@@ -77,6 +74,11 @@ export default buildConfig({
           group: 'Data Management',
         },
       }),
+    }),
+    vercelBlobStorage({
+      collections: blobCollections,
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      clientUploads: true,
     }),
   ],
   endpoints: [AICaptureEndpoint],
