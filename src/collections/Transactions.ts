@@ -52,9 +52,14 @@ export const Transactions: CollectionConfig = {
       name: 'account',
       type: 'relationship',
       relationTo: 'accounts',
-      label: 'Account',
+      label: 'Account Used',
       admin: {
-        condition: (_, siblingData) => siblingData?.source === 'account',
+        condition: (_, siblingData) =>
+          siblingData?.source === 'account' ||
+          siblingData?.type === 'expense' ||
+          siblingData?.type === 'payment' ||
+          siblingData?.type === 'transfer',
+        description: 'The account that funded this transaction.',
       },
     },
     {
@@ -64,7 +69,6 @@ export const Transactions: CollectionConfig = {
       label: 'Destination Account',
       admin: {
         condition: (_, siblingData) => siblingData?.type === 'transfer',
-        description: 'Account receiving the transferred funds.',
       },
     },
     {
@@ -82,7 +86,9 @@ export const Transactions: CollectionConfig = {
       label: 'Payment For',
       admin: {
         condition: (_, siblingData) => siblingData?.source === 'bill',
-        date: { pickerAppearance: 'monthOnly' },
+        date: {
+          pickerAppearance: 'monthOnly',
+        },
         description: 'The billing month this payment is for.',
       },
     },
@@ -150,25 +156,24 @@ export const Transactions: CollectionConfig = {
       async ({ data }) => {
         if (!data) return data
 
+        if ((data.type === 'expense' || data.type === 'payment') && !data.account) {
+          throw new Error('Expenses and payments require an account to be used.')
+        }
+
         if (data.type === 'transfer') {
-          data.source = 'account'
-          data.bill = undefined
-          data.billPaymentFor = undefined
-          data.loan = undefined
-          data.category = undefined
-
-          const fromId = typeof data.account === 'object' ? data.account?.id : data.account
-          const toId = typeof data.destinationAccount === 'object' ? data.destinationAccount?.id : data.destinationAccount
-
-          if (!fromId || !toId) {
-            throw new Error('Transfers require both a source account and a destination account.')
+          if (!data.account || !data.destinationAccount) {
+            throw new Error('Transfers require both a source and destination account.')
           }
 
-          if (fromId === toId) {
+          const sourceId = typeof data.account === 'object' ? data.account.id : data.account
+          const destinationId =
+            typeof data.destinationAccount === 'object'
+              ? data.destinationAccount.id
+              : data.destinationAccount
+
+          if (sourceId === destinationId) {
             throw new Error('Source and destination accounts must be different.')
           }
-        } else {
-          data.destinationAccount = undefined
         }
 
         return data
@@ -179,11 +184,16 @@ export const Transactions: CollectionConfig = {
         if (operation === 'create' && data.source === 'loan' && data.loan) {
           const loanId = typeof data.loan === 'object' ? data.loan.id : data.loan
           if (loanId) {
-            const loan = await req.payload.findByID({ collection: 'loans', id: loanId })
+            const loan = await req.payload.findByID({
+              collection: 'loans',
+              id: loanId,
+            })
             await req.payload.update({
               collection: 'loans',
               id: loanId,
-              data: { termsPaid: (loan.termsPaid ?? 0) + 1 },
+              data: {
+                termsPaid: (loan.termsPaid ?? 0) + 1,
+              },
             })
           }
         }
