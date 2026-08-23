@@ -55,8 +55,15 @@ export default function TransactionForm({
   }))
   const [isSaving, setIsSaving] = useState(false)
 
+  const requiresFundingAccount = data.type === 'expense' || data.type === 'payment'
+
   const onSubmitHandler = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    if (requiresFundingAccount && !relationshipId(data.account as any)) {
+      alert('Please select the account used for this transaction.')
+      return
+    }
 
     if (data.type === 'transfer') {
       const fromAccount = relationshipId(data.account as any)
@@ -138,12 +145,17 @@ export default function TransactionForm({
             placeholder="Select transaction type"
             onChange={(value) => {
               const nextType = value as Transaction['type']
+              const nextAccount =
+                nextType === 'expense' || nextType === 'payment' || nextType === 'transfer'
+                  ? relationshipId(data.account as any) ?? defaultAccount?.id
+                  : data.account
+
               if (nextType === 'transfer') {
                 setData({
                   ...data,
                   type: nextType,
                   source: 'account',
-                  account: relationshipId(data.account as any) ?? defaultAccount?.id,
+                  account: nextAccount,
                   destinationAccount: undefined,
                   bill: undefined,
                   billPaymentFor: undefined,
@@ -154,7 +166,7 @@ export default function TransactionForm({
                 return
               }
 
-              setData({ ...data, type: nextType, destinationAccount: undefined })
+              setData({ ...data, type: nextType, account: nextAccount, destinationAccount: undefined })
             }}
           />
         </div>
@@ -176,7 +188,10 @@ export default function TransactionForm({
                 setData({
                   ...data,
                   source: value as Transaction['source'],
-                  account: value === 'account' ? defaultAccount?.id : undefined,
+                  account:
+                    requiresFundingAccount || value === 'account'
+                      ? relationshipId(data.account as any) ?? defaultAccount?.id
+                      : undefined,
                   bill: undefined,
                   billPaymentFor: undefined,
                   loan: undefined,
@@ -220,21 +235,30 @@ export default function TransactionForm({
               Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
             </div>
           </>
-        ) : data.source === 'account' ? (
-          <div>
-            <Label>Account</Label>
-            <Select
-              key={`transaction-account-${initialData?.id ?? 'new'}`}
-              defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
-              options={accounts.map((account) => ({
-                value: account.id,
-                label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
-              }))}
-              placeholder="Select account"
-              onChange={(value) => setData({ ...data, account: value })}
-            />
-          </div>
-        ) : null}
+        ) : (
+          <>
+            {(requiresFundingAccount || data.source === 'account') && (
+              <div>
+                <Label>{requiresFundingAccount ? 'Account Used' : 'Account'}</Label>
+                <Select
+                  key={`transaction-account-${initialData?.id ?? 'new'}-${data.type ?? 'type'}`}
+                  defaultValue={relationshipId(data.account as any) ?? defaultAccount?.id ?? ''}
+                  options={accounts.map((account) => ({
+                    value: account.id,
+                    label: `${account.name} • ${account.accountNumber ?? 'No account number'}`,
+                  }))}
+                  placeholder={requiresFundingAccount ? 'Select account used' : 'Select account'}
+                  onChange={(value) => setData({ ...data, account: value })}
+                />
+                {requiresFundingAccount && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    This amount will be deducted from the selected account balance.
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
 
         {data.type !== 'transfer' && data.source === 'bill' && (
           <>
