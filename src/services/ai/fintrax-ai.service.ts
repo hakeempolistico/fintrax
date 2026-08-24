@@ -19,7 +19,7 @@ type ClaudeResponse = {
 }
 
 const CLAUDE_URL = 'https://api.anthropic.com/v1/messages'
-const DEFAULT_MODEL = 'claude-sonnet-4-20250514'
+const DEFAULT_MODEL = 'claude-sonnet-5'
 const MAX_TOOL_ROUNDS = 5
 const MAX_HISTORY_MESSAGES = 20
 const MAX_MESSAGE_LENGTH = 8000
