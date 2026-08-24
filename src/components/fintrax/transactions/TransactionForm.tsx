@@ -27,6 +27,11 @@ const relationshipId = (value: string | { id: string } | null | undefined) =>
 
 const toDateInputValue = (value?: string | null) => (value ? value.slice(0, 10) : '')
 const toMonthInputValue = (value?: string | null) => (value ? value.slice(0, 7) : '')
+const getTodayDateInputValue = () => {
+  const now = new Date()
+  const offset = now.getTimezoneOffset()
+  return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10)
+}
 
 export default function TransactionForm({
   closeModal,
@@ -49,7 +54,7 @@ export default function TransactionForm({
 
   const [data, setData] = useState<TransactionWithDestination>(() => ({
     amount: initialData?.amount,
-    date: toDateInputValue(initialData?.date),
+    date: mode === 'create' ? toDateInputValue(initialData?.date) || getTodayDateInputValue() : toDateInputValue(initialData?.date),
     type: initialData?.type,
     source: initialData?.type === 'transfer' ? 'account' : initialData?.source,
     account: resolvedInitialAccount,
