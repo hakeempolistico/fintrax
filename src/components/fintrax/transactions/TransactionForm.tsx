@@ -47,14 +47,14 @@ export default function TransactionForm({
   const initialAccountId = relationshipId(initialData?.account as any)
   const resolvedInitialAccount =
     initialAccountId ??
-    (mode === 'create' &&
-    (initialType === 'expense' || initialType === 'payment' || initialType === 'transfer')
-      ? defaultAccount?.id
-      : undefined)
+    (mode === 'create' && initialType === 'transfer' ? defaultAccount?.id : undefined)
 
   const [data, setData] = useState<TransactionWithDestination>(() => ({
     amount: initialData?.amount,
-    date: mode === 'create' ? toDateInputValue(initialData?.date) || getTodayDateInputValue() : toDateInputValue(initialData?.date),
+    date:
+      mode === 'create'
+        ? toDateInputValue(initialData?.date) || getTodayDateInputValue()
+        : toDateInputValue(initialData?.date),
     type: initialData?.type,
     source: initialData?.type === 'transfer' ? 'account' : initialData?.source,
     account: resolvedInitialAccount,
@@ -148,8 +148,7 @@ export default function TransactionForm({
             onChange={(value) => {
               const nextType = value as Transaction['type']
               const nextAccount =
-                mode === 'create' &&
-                (nextType === 'expense' || nextType === 'payment' || nextType === 'transfer')
+                mode === 'create' && nextType === 'transfer'
                   ? relationshipId(data.account as any) ?? defaultAccount?.id
                   : data.account
 
@@ -168,7 +167,7 @@ export default function TransactionForm({
                 })
                 return
               }
-              setData({ ...data, type: nextType, account: nextAccount, destinationAccount: undefined })
+              setData({ ...data, type: nextType, account: data.account ?? null, destinationAccount: undefined })
             }}
           />
         </div>
@@ -181,7 +180,7 @@ export default function TransactionForm({
               defaultValue={relationshipId(data.account as any) ?? ''}
               options={accountOptions}
               placeholder="Select account used"
-              allowEmpty={mode === 'edit'}
+              allowEmpty
               emptyLabel="No account"
               onChange={(value) => setData({ ...data, account: value || null })}
             />
@@ -260,7 +259,7 @@ export default function TransactionForm({
               onChange={(value) => setData({
                 ...data,
                 source: value as Transaction['source'],
-                account: value === 'account' ? relationshipId(data.account as any) ?? (mode === 'create' ? defaultAccount?.id : undefined) : data.account,
+                account: data.account ?? null,
                 bill: undefined,
                 billPaymentFor: undefined,
                 loan: undefined,
@@ -277,7 +276,7 @@ export default function TransactionForm({
               defaultValue={relationshipId(data.account as any) ?? ''}
               options={accountOptions}
               placeholder="Select account"
-              allowEmpty={mode === 'edit'}
+              allowEmpty
               emptyLabel="No account"
               onChange={(value) => setData({ ...data, account: value || null })}
             />
