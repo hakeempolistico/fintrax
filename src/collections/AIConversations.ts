@@ -1,4 +1,4 @@
-import { authenticatedMemberOrAdmin, forceMemberOwnership, memberOwnedAccess } from '@/access/memberOwnership'
+import { authenticatedMemberOnly, forceMemberOwnership, memberOnlyOwnedAccess } from '@/access/memberOwnership'
 import type { CollectionConfig } from 'payload'
 
 export const AIConversations: CollectionConfig = {
@@ -9,10 +9,10 @@ export const AIConversations: CollectionConfig = {
     group: 'AI',
   },
   access: {
-    create: authenticatedMemberOrAdmin,
-    read: memberOwnedAccess,
-    update: memberOwnedAccess,
-    delete: memberOwnedAccess,
+    create: authenticatedMemberOnly,
+    read: memberOnlyOwnedAccess,
+    update: memberOnlyOwnedAccess,
+    delete: memberOnlyOwnedAccess,
   },
   fields: [
     {
