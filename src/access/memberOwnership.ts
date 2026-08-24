@@ -4,8 +4,21 @@ export const isMemberUser = (user: any) => user?.collection === 'members'
 export const authenticatedMemberOrAdmin = ({ req }: any) =>
   Boolean(req.user && (isAdminUser(req.user) || isMemberUser(req.user)))
 
+export const authenticatedMemberOnly = ({ req }: any) => isMemberUser(req.user)
+
 export const memberOwnedAccess = ({ req }: any) => {
   if (isAdminUser(req.user)) return true
+  if (isMemberUser(req.user)) {
+    return {
+      member: {
+        equals: req.user.id,
+      },
+    }
+  }
+  return false
+}
+
+export const memberOnlyOwnedAccess = ({ req }: any) => {
   if (isMemberUser(req.user)) {
     return {
       member: {
