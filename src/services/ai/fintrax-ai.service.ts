@@ -75,7 +75,7 @@ const tools = [
 ]
 
 const relationshipId = (value: unknown): string | undefined => {
-  if (typeof value === 'string') return value
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
   if (value && typeof value === 'object' && 'id' in value) return String((value as { id: unknown }).id)
   return undefined
 }
@@ -85,43 +85,70 @@ const dateBoundary = (value: unknown, end = false) => {
   return `${value}T${end ? '23:59:59.999' : '00:00:00.000'}Z`
 }
 
-async function getTransactions(memberId: string, input: Record<string, unknown>) {
-  const payload = await getPayload({ config })
+function transactionWhere(memberId: string, input: Record<string, unknown>, spendingOnly = false) {
   const and: any[] = [{ member: { equals: memberId } }]
   const startDate = dateBoundary(input.startDate)
   const endDate = dateBoundary(input.endDate, true)
 
   if (startDate) and.push({ date: { greater_than_equal: startDate } })
   if (endDate) and.push({ date: { less_than_equal: endDate } })
-  if (typeof input.type === 'string') and.push({ type: { equals: input.type } })
+  if (spendingOnly) and.push({ type: { in: ['expense', 'payment'] } })
+  else if (typeof input.type === 'string') and.push({ type: { equals: input.type } })
   if (typeof input.category === 'string' && input.category.trim()) and.push({ category: { equals: input.category.trim() } })
+  return { and } as any
+}
 
+async function getOwnedRelationshipMaps(memberId: string) {
+  const payload = await getPayload({ config })
+  const [accounts, bills, loans] = await Promise.all([
+    payload.find({ collection: 'accounts', pagination: false, depth: 0, where: { member: { equals: memberId } } }),
+    payload.find({ collection: 'bills', pagination: false, depth: 0, where: { member: { equals: memberId } } }),
+    payload.find({ collection: 'loans', pagination: false, depth: 0, where: { member: { equals: memberId } } }),
+  ])
+
+  return {
+    accounts: new Map((accounts.docs as any[]).map((item) => [String(item.id), { id: item.id, name: item.name }])),
+    bills: new Map((bills.docs as any[]).map((item) => [String(item.id), { id: item.id, provider: item.provider }])),
+    loans: new Map((loans.docs as any[]).map((item) => [String(item.id), { id: item.id, name: item.name }])),
+  }
+}
+
+async function getTransactions(memberId: string, input: Record<string, unknown>) {
+  const payload = await getPayload({ config })
   const requestedLimit = typeof input.limit === 'number' ? Math.floor(input.limit) : 50
   const limit = Math.max(1, Math.min(requestedLimit, 100))
 
-  const result = await payload.find({
-    collection: 'transactions',
-    depth: 1,
-    page: 1,
-    limit,
-    sort: '-date',
-    where: { and } as any,
-  })
+  const [result, owned] = await Promise.all([
+    payload.find({
+      collection: 'transactions',
+      depth: 0,
+      page: 1,
+      limit,
+      sort: '-date',
+      where: transactionWhere(memberId, input),
+    }),
+    getOwnedRelationshipMaps(memberId),
+  ])
 
-  return result.docs.map((transaction: any) => ({
-    id: transaction.id,
-    date: transaction.date,
-    type: transaction.type,
-    amount: transaction.amount,
-    category: transaction.category,
-    paymentMethod: transaction.paymentMethod,
-    source: transaction.source,
-    reference: transaction.reference,
-    notes: transaction.notes,
-    account: transaction.account ? { id: relationshipId(transaction.account), name: transaction.account?.name } : null,
-    bill: transaction.bill ? { id: relationshipId(transaction.bill), provider: transaction.bill?.provider } : null,
-    loan: transaction.loan ? { id: relationshipId(transaction.loan), name: transaction.loan?.name } : null,
-  }))
+  return result.docs.map((transaction: any) => {
+    const accountId = relationshipId(transaction.account)
+    const billId = relationshipId(transaction.bill)
+    const loanId = relationshipId(transaction.loan)
+    return {
+      id: transaction.id,
+      date: transaction.date,
+      type: transaction.type,
+      amount: transaction.amount,
+      category: transaction.category,
+      paymentMethod: transaction.paymentMethod,
+      source: transaction.source,
+      reference: transaction.reference,
+      notes: transaction.notes,
+      account: accountId ? owned.accounts.get(accountId) ?? null : null,
+      bill: billId ? owned.bills.get(billId) ?? null : null,
+      loan: loanId ? owned.loans.get(loanId) ?? null : null,
+    }
+  })
 }
 
 async function getAccounts(memberId: string) {
@@ -211,12 +238,17 @@ async function getLoans(memberId: string) {
 }
 
 async function getSpendingSummary(memberId: string, input: Record<string, unknown>) {
-  const transactions = await getTransactions(memberId, { ...input, limit: 100 })
-  const spending = transactions.filter((transaction: any) => transaction.type === 'expense' || transaction.type === 'payment')
+  const payload = await getPayload({ config })
+  const result = await payload.find({
+    collection: 'transactions',
+    pagination: false,
+    depth: 0,
+    where: transactionWhere(memberId, input, true),
+  })
+
   const byCategory: Record<string, number> = {}
   let total = 0
-
-  for (const transaction of spending as any[]) {
+  for (const transaction of result.docs as any[]) {
     const amount = Number(transaction.amount ?? 0)
     const category = transaction.category || 'other'
     total += amount
@@ -225,7 +257,7 @@ async function getSpendingSummary(memberId: string, input: Record<string, unknow
 
   return {
     total,
-    transactionCount: spending.length,
+    transactionCount: result.docs.length,
     byCategory: Object.entries(byCategory)
       .map(([category, amount]) => ({ category, amount }))
       .sort((a, b) => b.amount - a.amount),
@@ -249,14 +281,25 @@ async function getFinancialOverview(memberId: string) {
     if (transaction.type === 'expense' || transaction.type === 'payment') expenses += amount
   }
 
-  const currentAccountBalance = accounts.reduce((sum, account) => sum + Number(account.currentBalance ?? 0), 0)
-  const outstandingDebt = loans.reduce((sum, loan: any) => sum + Number(loan.outstandingBalance ?? loan.principalAmount ?? 0), 0)
-
   return {
-    accounts: { count: accounts.length, currentBalance: currentAccountBalance },
-    transactions: { count: transactions.docs.length, totalIncome: income, totalExpensesAndPayments: expenses, netCashflow: income - expenses },
-    bills: { count: bills.length, recurringAmount: bills.reduce((sum: number, bill: any) => sum + Number(bill.amount ?? 0), 0) },
-    loans: { count: loans.length, outstandingDebt },
+    accounts: {
+      count: accounts.length,
+      currentBalance: accounts.reduce((sum, account) => sum + Number(account.currentBalance ?? 0), 0),
+    },
+    transactions: {
+      count: transactions.docs.length,
+      totalIncome: income,
+      totalExpensesAndPayments: expenses,
+      netCashflow: income - expenses,
+    },
+    bills: {
+      count: bills.length,
+      recurringAmount: bills.reduce((sum: number, bill: any) => sum + Number(bill.amount ?? 0), 0),
+    },
+    loans: {
+      count: loans.length,
+      outstandingDebt: loans.reduce((sum, loan: any) => sum + Number(loan.outstandingBalance ?? loan.principalAmount ?? 0), 0),
+    },
   }
 }
 
