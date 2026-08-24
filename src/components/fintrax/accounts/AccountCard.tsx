@@ -18,7 +18,11 @@ const accountTypeConfig: Record<NonNullable<AccountWithBalance['type']>, { label
 
 const formatCurrency = (value: number) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value)
 const formatDate = (value?: string | null) => value ? new Intl.DateTimeFormat('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value)) : '—'
-const maskAccountNumber = (value: string) => value.length <= 4 ? value : `•••• ${value.replace(/\s/g, '').slice(-4)}`
+const maskAccountNumber = (value: unknown) => {
+  if (value === null || value === undefined) return '—'
+  const normalized = String(value)
+  return normalized.length <= 4 ? normalized : `•••• ${normalized.replace(/\s/g, '').slice(-4)}`
+}
 
 const getAccountLogo = (account: AccountWithBalance) => {
   const accountIdentity = `${account.name ?? ''} ${account.source ?? ''}`.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -96,7 +100,7 @@ export default function AccountCard({ account }: AccountCardProps) {
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div><p className="text-xs font-medium text-gray-400">Account Type</p><p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{config.label}</p></div>
-          <div><p className="text-xs font-medium text-gray-400">Account Number</p><p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{account.accountNumber}</p></div>
+          <div><p className="text-xs font-medium text-gray-400">Account Number</p><p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{String(account.accountNumber ?? '—')}</p></div>
           <div><p className="text-xs font-medium text-gray-400">Transactions</p><p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{account.transactionCount}</p></div>
           <div><p className="text-xs font-medium text-gray-400">Default Account</p><p className="mt-1 text-sm text-gray-800 dark:text-gray-200">{account.isDefault ? 'Yes' : 'No'}</p></div>
         </div>

@@ -27,6 +27,11 @@ const relationshipId = (value: string | { id: string } | null | undefined) =>
 
 const toDateInputValue = (value?: string | null) => (value ? value.slice(0, 10) : '')
 const toMonthInputValue = (value?: string | null) => (value ? value.slice(0, 7) : '')
+const getTodayDateInputValue = () => {
+  const now = new Date()
+  const offset = now.getTimezoneOffset()
+  return new Date(now.getTime() - offset * 60_000).toISOString().slice(0, 10)
+}
 
 export default function TransactionForm({
   closeModal,
@@ -42,14 +47,14 @@ export default function TransactionForm({
   const initialAccountId = relationshipId(initialData?.account as any)
   const resolvedInitialAccount =
     initialAccountId ??
-    (mode === 'create' &&
-    (initialType === 'expense' || initialType === 'payment' || initialType === 'transfer')
-      ? defaultAccount?.id
-      : undefined)
+    (mode === 'create' && initialType === 'transfer' ? defaultAccount?.id : undefined)
 
   const [data, setData] = useState<TransactionWithDestination>(() => ({
     amount: initialData?.amount,
-    date: toDateInputValue(initialData?.date),
+    date:
+      mode === 'create'
+        ? toDateInputValue(initialData?.date) || getTodayDateInputValue()
+        : toDateInputValue(initialData?.date),
     type: initialData?.type,
     source: initialData?.type === 'transfer' ? 'account' : initialData?.source,
     account: resolvedInitialAccount,
@@ -75,7 +80,6 @@ export default function TransactionForm({
 
   const swapTransferAccounts = () => {
     if (!sourceAccountId || !destinationAccountId) return
-
     setData((current) => ({
       ...current,
       source: 'account',
@@ -90,12 +94,10 @@ export default function TransactionForm({
     if (data.type === 'transfer') {
       const fromAccount = relationshipId(data.account as any)
       const toAccount = relationshipId(data.destinationAccount as any)
-
       if (!fromAccount || !toAccount) {
         alert('Please select both the source and destination accounts.')
         return
       }
-
       if (fromAccount === toAccount) {
         alert('Source and destination accounts must be different.')
         return
@@ -146,8 +148,7 @@ export default function TransactionForm({
             onChange={(value) => {
               const nextType = value as Transaction['type']
               const nextAccount =
-                mode === 'create' &&
-                (nextType === 'expense' || nextType === 'payment' || nextType === 'transfer')
+                mode === 'create' && nextType === 'transfer'
                   ? relationshipId(data.account as any) ?? defaultAccount?.id
                   : data.account
 
@@ -166,8 +167,7 @@ export default function TransactionForm({
                 })
                 return
               }
-
-              setData({ ...data, type: nextType, account: nextAccount, destinationAccount: undefined })
+              setData({ ...data, type: nextType, account: data.account ?? null, destinationAccount: undefined })
             }}
           />
         </div>
@@ -180,7 +180,7 @@ export default function TransactionForm({
               defaultValue={relationshipId(data.account as any) ?? ''}
               options={accountOptions}
               placeholder="Select account used"
-              allowEmpty={mode === 'edit'}
+              allowEmpty
               emptyLabel="No account"
               onChange={(value) => setData({ ...data, account: value || null })}
             />
@@ -217,7 +217,6 @@ export default function TransactionForm({
                 onChange={(value) => setData({ ...data, source: 'account', destinationAccount: value || null })}
               />
             </div>
-
             <div className="sm:col-span-2 flex justify-center">
               <button
                 type="button"
@@ -229,7 +228,6 @@ export default function TransactionForm({
                 Swap accounts
               </button>
             </div>
-
             <div className="sm:col-span-2 rounded-xl border border-blue-200 bg-blue-50/70 p-4 text-sm text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/[0.08] dark:text-blue-300">
               Transfers move money between your own accounts only. They change account balances but are excluded from income, expenses, spending categories, and monthly expense analytics.
             </div>
@@ -238,25 +236,11 @@ export default function TransactionForm({
 
         <div>
           <Label>Amount</Label>
-          <Input
-            defaultValue={data.amount ?? ''}
-            onChange={(e) => setData({ ...data, amount: Number(e.target.value) })}
-            type="number"
-            placeholder="0.00"
-            name="amount"
-            min="0"
-            step={0.01}
-          />
+          <Input defaultValue={data.amount ?? ''} onChange={(e) => setData({ ...data, amount: Number(e.target.value) })} type="number" placeholder="0.00" name="amount" min="0" step={0.01} />
         </div>
-
         <div>
           <Label>Transaction Date</Label>
-          <Input
-            defaultValue={String(data.date ?? '')}
-            type="date"
-            name="date"
-            onChange={(e) => setData({ ...data, date: e.target.value })}
-          />
+          <Input defaultValue={String(data.date ?? '')} type="date" name="date" onChange={(e) => setData({ ...data, date: e.target.value })} />
         </div>
 
         {data.type !== 'transfer' && (
@@ -272,19 +256,14 @@ export default function TransactionForm({
                 { value: 'other', label: 'Other' },
               ]}
               placeholder="Select source"
-              onChange={(value) =>
-                setData({
-                  ...data,
-                  source: value as Transaction['source'],
-                  account:
-                    value === 'account'
-                      ? relationshipId(data.account as any) ?? (mode === 'create' ? defaultAccount?.id : undefined)
-                      : data.account,
-                  bill: undefined,
-                  billPaymentFor: undefined,
-                  loan: undefined,
-                })
-              }
+              onChange={(value) => setData({
+                ...data,
+                source: value as Transaction['source'],
+                account: data.account ?? null,
+                bill: undefined,
+                billPaymentFor: undefined,
+                loan: undefined,
+              })}
             />
           </div>
         )}
@@ -297,7 +276,7 @@ export default function TransactionForm({
               defaultValue={relationshipId(data.account as any) ?? ''}
               options={accountOptions}
               placeholder="Select account"
-              allowEmpty={mode === 'edit'}
+              allowEmpty
               emptyLabel="No account"
               onChange={(value) => setData({ ...data, account: value || null })}
             />
@@ -308,22 +287,11 @@ export default function TransactionForm({
           <>
             <div>
               <Label>Bill</Label>
-              <Select
-                key={`transaction-bill-${initialData?.id ?? 'new'}`}
-                defaultValue={relationshipId(data.bill as any) ?? ''}
-                options={bills.map((bill) => ({ value: bill.id, label: bill.provider ?? 'Bill' }))}
-                placeholder="Select bill"
-                onChange={(value) => setData({ ...data, bill: value })}
-              />
+              <Select key={`transaction-bill-${initialData?.id ?? 'new'}`} defaultValue={relationshipId(data.bill as any) ?? ''} options={bills.map((bill) => ({ value: bill.id, label: bill.provider ?? 'Bill' }))} placeholder="Select bill" onChange={(value) => setData({ ...data, bill: value })} />
             </div>
             <div>
               <Label>Payment For</Label>
-              <Input
-                defaultValue={String(data.billPaymentFor ?? '')}
-                type="month"
-                name="billPaymentFor"
-                onChange={(e) => setData({ ...data, billPaymentFor: e.target.value })}
-              />
+              <Input defaultValue={String(data.billPaymentFor ?? '')} type="month" name="billPaymentFor" onChange={(e) => setData({ ...data, billPaymentFor: e.target.value })} />
               <p className="mt-1 text-xs text-gray-500">Select the month this payment is for.</p>
             </div>
           </>
@@ -332,13 +300,7 @@ export default function TransactionForm({
         {data.type !== 'transfer' && data.source === 'loan' && (
           <div>
             <Label>Loan</Label>
-            <Select
-              key={`transaction-loan-${initialData?.id ?? 'new'}`}
-              defaultValue={relationshipId(data.loan as any) ?? ''}
-              options={loans.map((loan) => ({ value: loan.id, label: loan.name }))}
-              placeholder="Select loan"
-              onChange={(value) => setData({ ...data, loan: value })}
-            />
+            <Select key={`transaction-loan-${initialData?.id ?? 'new'}`} defaultValue={relationshipId(data.loan as any) ?? ''} options={loans.map((loan) => ({ value: loan.id, label: loan.name }))} placeholder="Select loan" onChange={(value) => setData({ ...data, loan: value })} />
           </div>
         )}
 
@@ -349,20 +311,11 @@ export default function TransactionForm({
               key={`transaction-category-${initialData?.id ?? 'new'}`}
               defaultValue={data.category ?? ''}
               options={[
-                { value: 'salary', label: 'Salary' },
-                { value: 'food', label: 'Food' },
-                { value: 'transportation', label: 'Transportation' },
-                { value: 'shopping', label: 'Shopping' },
-                { value: 'utilities', label: 'Utilities' },
-                { value: 'rent', label: 'Rent' },
-                { value: 'insurance', label: 'Insurance' },
-                { value: 'loan-payment', label: 'Loan Payment' },
-                { value: 'bill-payment', label: 'Bill Payment' },
-                { value: 'entertainment', label: 'Entertainment' },
-                { value: 'healthcare', label: 'Healthcare' },
-                { value: 'education', label: 'Education' },
-                { value: 'travel', label: 'Travel' },
-                { value: 'other', label: 'Other' },
+                { value: 'salary', label: 'Salary' }, { value: 'food', label: 'Food' }, { value: 'transportation', label: 'Transportation' },
+                { value: 'shopping', label: 'Shopping' }, { value: 'utilities', label: 'Utilities' }, { value: 'rent', label: 'Rent' },
+                { value: 'insurance', label: 'Insurance' }, { value: 'loan-payment', label: 'Loan Payment' }, { value: 'bill-payment', label: 'Bill Payment' },
+                { value: 'entertainment', label: 'Entertainment' }, { value: 'healthcare', label: 'Healthcare' }, { value: 'education', label: 'Education' },
+                { value: 'travel', label: 'Travel' }, { value: 'other', label: 'Other' },
               ]}
               placeholder="Select category"
               onChange={(value) => setData({ ...data, category: value as Transaction['category'] })}
@@ -377,47 +330,29 @@ export default function TransactionForm({
               key={`payment-method-${initialData?.id ?? 'new'}`}
               defaultValue={data.paymentMethod ?? ''}
               options={[
-                { value: 'cash', label: 'Cash' },
-                { value: 'bank-transfer', label: 'Bank Transfer' },
-                { value: 'credit-card', label: 'Credit Card' },
-                { value: 'debit-card', label: 'Debit Card' },
-                { value: 'direct-debit', label: 'Direct Debit' },
-                { value: 'other', label: 'Other' },
+                { value: 'cash', label: 'Cash' }, { value: 'bank-transfer', label: 'Bank Transfer' },
+                { value: 'credit-card', label: 'Credit Card' }, { value: 'debit-card', label: 'Debit Card' },
+                { value: 'direct-debit', label: 'Direct Debit' }, { value: 'other', label: 'Other' },
               ]}
               placeholder="Select payment method"
-              onChange={(value) =>
-                setData({ ...data, paymentMethod: value as Transaction['paymentMethod'] })
-              }
+              onChange={(value) => setData({ ...data, paymentMethod: value as Transaction['paymentMethod'] })}
             />
           </div>
         )}
 
         <div>
           <Label>Reference</Label>
-          <Input
-            defaultValue={data.reference ?? ''}
-            onChange={(e) => setData({ ...data, reference: e.target.value })}
-            type="text"
-            placeholder="Receipt or confirmation number"
-            name="reference"
-          />
+          <Input defaultValue={data.reference ?? ''} onChange={(e) => setData({ ...data, reference: e.target.value })} type="text" placeholder="Receipt or confirmation number" name="reference" />
         </div>
-
         <div className="sm:col-span-2">
           <Label>Notes</Label>
-          <Input
-            defaultValue={data.notes ?? ''}
-            onChange={(e) => setData({ ...data, notes: e.target.value })}
-            type="text"
-            placeholder="Additional notes"
-            name="notes"
-          />
+          <Input defaultValue={data.notes ?? ''} onChange={(e) => setData({ ...data, notes: e.target.value })} type="text" placeholder="Additional notes" name="notes" />
         </div>
       </div>
 
       <div className="mt-6 flex w-full items-center justify-end gap-3">
         <Button size="sm" variant="outline" type="button" onClick={closeModal}>Close</Button>
-        <Button size="sm" disabled={isSaving}>
+        <Button size="sm" type="submit" disabled={isSaving}>
           {isSaving ? 'Saving...' : mode === 'edit' ? 'Save Changes' : 'Create'}
         </Button>
       </div>
