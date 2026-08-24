@@ -134,10 +134,10 @@ const AccountForm = ({ account, closeModal, handleSave }: AccountFormProps) => {
       </div>
 
       <div className="mt-6 flex w-full items-center justify-end gap-3">
-        <Button size="sm" variant="outline" onClick={closeModal}>
+        <Button size="sm" variant="outline" type="button" onClick={closeModal}>
           Cancel
         </Button>
-        <Button size="sm">{account ? 'Save Changes' : 'Add Account'}</Button>
+        <Button size="sm" type="submit">{account ? 'Save Changes' : 'Add Account'}</Button>
       </div>
     </form>
   )
