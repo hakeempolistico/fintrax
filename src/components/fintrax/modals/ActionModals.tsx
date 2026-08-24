@@ -87,10 +87,9 @@ export default function ActionModals({ me, collection, bills, accounts, loans }:
           href="/portal/ai-chat"
           aria-label="AI Chat"
           title="AI Chat"
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-full bg-brand-100 px-3 text-sm font-medium text-brand-500 transition hover:bg-brand-200 dark:bg-purple-500 dark:text-white dark:hover:bg-purple-600"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-500 transition hover:bg-brand-200 dark:bg-purple-500 dark:text-white dark:hover:bg-purple-600"
         >
           <MessageCircle className="h-5 w-5" />
-          <span className="hidden sm:inline">AI Chat</span>
         </Link>
       </div>
 
