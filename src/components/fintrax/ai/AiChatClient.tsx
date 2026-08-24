@@ -1,5 +1,6 @@
 'use client'
 
+import MarkdownMessage from '@/components/fintrax/ai/MarkdownMessage'
 import { Bot, LoaderCircle, MessageSquare, Plus, Send, Sparkles, Trash2, User } from 'lucide-react'
 import { FormEvent, useEffect, useRef, useState } from 'react'
 
@@ -233,7 +234,9 @@ export default function AiChatClient() {
               messages.map((message, index) => (
                 <div key={`${message.role}-${index}`} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {message.role === 'assistant' && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-500 dark:bg-brand-500/10"><Bot className="h-4 w-4" /></div>}
-                  <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'bg-brand-500 text-white' : 'border border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-200'}`}>{message.content}</div>
+                  <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === 'user' ? 'whitespace-pre-wrap bg-brand-500 text-white' : 'border border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-200'}`}>
+                    {message.role === 'assistant' ? <MarkdownMessage content={message.content} /> : message.content}
+                  </div>
                   {message.role === 'user' && <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-300"><User className="h-4 w-4" /></div>}
                 </div>
               ))
