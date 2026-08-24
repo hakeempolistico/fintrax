@@ -8,6 +8,7 @@ export const runtime = 'nodejs'
 const CONVERSATION_COLLECTION = 'ai-conversations' as any
 const MAX_STORED_MESSAGES = 200
 const MAX_MESSAGE_LENGTH = 8000
+const APP_TIME_ZONE = 'Asia/Manila'
 
 const sanitizeStoredMessages = (messages: any): FintraxChatMessage[] => {
   if (!Array.isArray(messages)) return []
@@ -18,6 +19,54 @@ const sanitizeStoredMessages = (messages: any): FintraxChatMessage[] => {
     )
     .map((message) => ({ role: message.role, content: message.content }))
     .slice(-MAX_STORED_MESSAGES)
+}
+
+const getLocalDateParts = () => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: APP_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date())
+
+  const getPart = (type: 'year' | 'month' | 'day') =>
+    Number(parts.find((part) => part.type === type)?.value ?? 0)
+
+  return {
+    year: getPart('year'),
+    month: getPart('month'),
+    day: getPart('day'),
+  }
+}
+
+const formatDate = (year: number, month: number, day: number) =>
+  `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+const getLastDayOfMonth = (year: number, month: number) =>
+  new Date(Date.UTC(year, month, 0)).getUTCDate()
+
+const addTemporalScope = (message: string) => {
+  const normalized = message.toLowerCase()
+  const { year, month, day } = getLocalDateParts()
+  const today = formatDate(year, month, day)
+
+  let scope: string | null = null
+
+  if (/\bthis month\b|\bcurrent month\b/.test(normalized)) {
+    scope = `${formatDate(year, month, 1)} through ${today}`
+  } else if (/\blast month\b|\bprevious month\b/.test(normalized)) {
+    const previousMonth = month === 1 ? 12 : month - 1
+    const previousYear = month === 1 ? year - 1 : year
+    scope = `${formatDate(previousYear, previousMonth, 1)} through ${formatDate(previousYear, previousMonth, getLastDayOfMonth(previousYear, previousMonth))}`
+  } else if (/\bthis year\b|\bcurrent year\b/.test(normalized)) {
+    scope = `${formatDate(year, 1, 1)} through ${today}`
+  } else if (/\btoday\b/.test(normalized)) {
+    scope = `${today} only`
+  }
+
+  if (!scope) return message
+
+  return `${message}\n\n[Fintrax internal date constraint: The user's requested period is ${scope}, based on timezone ${APP_TIME_ZONE}. For transaction, spending, income, expense, payment, or cash-flow analysis, use only records inside this period. Do not use an all-time financial overview to answer a period-specific question, and do not include transactions outside this period.]`
 }
 
 async function authenticateMember(request: NextRequest) {
@@ -111,9 +160,15 @@ export async function POST(request: NextRequest) {
       history = sanitizeStoredMessages(conversation.messages)
     }
 
-    const messages: FintraxChatMessage[] = [...history, { role: 'user', content: message }]
-    const answer = await chatWithFintraxAI(memberId, messages)
-    const storedMessages = [...messages, { role: 'assistant' as const, content: answer }].slice(-MAX_STORED_MESSAGES)
+    const aiMessage = addTemporalScope(message)
+    const aiMessages: FintraxChatMessage[] = [...history, { role: 'user', content: aiMessage }]
+    const answer = await chatWithFintraxAI(memberId, aiMessages)
+
+    const storedMessages = [
+      ...history,
+      { role: 'user' as const, content: message },
+      { role: 'assistant' as const, content: answer },
+    ].slice(-MAX_STORED_MESSAGES)
 
     if (conversation) {
       conversation = await auth.payload.update({
