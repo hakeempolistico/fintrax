@@ -9,7 +9,7 @@ import Button from '@/components/ui/button/Button'
 import { Modal } from '@/components/ui/modal'
 import { useModal } from '@/hooks/useModal'
 import { MessageCircle, Plus } from 'lucide-react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSidebar } from '@/context/SidebarContext'
 
 type Props = {
@@ -22,6 +22,7 @@ type Props = {
 
 export default function ActionModals({ me, collection, bills, accounts, loans }: Props) {
   const createModal = useModal()
+  const router = useRouter()
   const { isMobileOpen } = useSidebar()
 
   const config = {
@@ -83,14 +84,15 @@ export default function ActionModals({ me, collection, bills, accounts, loans }:
           <Plus className="h-5 w-5" />
         </Button>
 
-        <Link
-          href="/portal/ai-chat"
+        <Button
+          size="sm"
+          onClick={() => router.push('/portal/ai-chat')}
+          className="!rounded-full !bg-brand-100 !text-brand-500 dark:!bg-purple-500 dark:!text-white"
           aria-label="AI Chat"
           title="AI Chat"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-brand-100 text-brand-500 transition hover:bg-brand-200 dark:bg-purple-500 dark:text-white dark:hover:bg-purple-600"
         >
           <MessageCircle className="h-5 w-5" />
-        </Link>
+        </Button>
       </div>
 
       <Modal
