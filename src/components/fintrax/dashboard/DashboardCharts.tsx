@@ -46,6 +46,7 @@ export default function DashboardCharts(props: DashboardChartsProps) {
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">6 months ending {props.periodLabel}</p>
         </div>
         <ReactApexChart
+          key={`monthly-${props.periodLabel}`}
           type="area"
           height={280}
           options={options}
@@ -75,6 +76,7 @@ export default function DashboardCharts(props: DashboardChartsProps) {
       </div>
       {props.categories.length ? (
         <ReactApexChart
+          key={`categories-${props.periodLabel}`}
           type="donut"
           height={280}
           options={options}
