@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import DashboardCharts from '@/components/fintrax/dashboard/DashboardCharts'
+import DashboardExpenseCard from '@/components/fintrax/dashboard/DashboardExpenseCard'
 import DashboardLists from '@/components/fintrax/dashboard/DashboardLists'
 import DashboardPeriodFilter from '@/components/fintrax/dashboard/DashboardPeriodFilter'
 import { formatAmount } from '@/helper/common.helper'
@@ -48,13 +49,12 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const selectedDate = monthDate(selectedPeriod)
   const selectedLabel = monthLabel(selectedPeriod)
   const selectedTransactions = transactions.filter((transaction) => transactionMonthKey(transaction.date) === selectedPeriod)
+  const expenseTransactions = selectedTransactions.filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
 
   const income = selectedTransactions
     .filter((transaction) => transaction.type === 'income')
     .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
-  const expenses = selectedTransactions
-    .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
-    .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
+  const expenses = expenseTransactions.reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
   const balance = income - expenses
 
   const monthly = Array.from({ length: 6 }, (_, index) => {
@@ -73,12 +73,10 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   })
 
   const categoryMap = new Map<string, number>()
-  selectedTransactions
-    .filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
-    .forEach((transaction) => {
-      const category = transaction.category ?? 'other'
-      categoryMap.set(category, (categoryMap.get(category) ?? 0) + (transaction.amount ?? 0))
-    })
+  expenseTransactions.forEach((transaction) => {
+    const category = transaction.category ?? 'other'
+    categoryMap.set(category, (categoryMap.get(category) ?? 0) + (transaction.amount ?? 0))
+  })
 
   const categories = [...categoryMap.entries()]
     .map(([label, value]) => ({
@@ -120,7 +118,7 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
         <DashboardCard label="Total Income" number={formatAmount(income)} helper={`Income recorded in ${selectedLabel}`} tone="income" />
-        <DashboardCard label="Total Expenses" number={formatAmount(expenses)} helper={`Expenses and payments in ${selectedLabel}`} tone="expense" />
+        <DashboardExpenseCard total={expenses} periodLabel={selectedLabel} transactions={expenseTransactions} />
         <DashboardCard label="Monthly Balance" number={formatAmount(balance)} helper="Income less expenses" tone="balance" />
         <DashboardCard label="Upcoming Bills" number={`${upcomingBills.length} ${upcomingBills.length === 1 ? 'Bill' : 'Bills'}`} helper="Next bills requiring attention" tone="bills" />
       </div>
