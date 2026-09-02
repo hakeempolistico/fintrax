@@ -41,7 +41,7 @@ export default function DashboardExpenseCard({ total, periodLabel, transactions 
   const modal = isOpen && typeof document !== 'undefined'
     ? createPortal(
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[100000] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setIsOpen(false)
