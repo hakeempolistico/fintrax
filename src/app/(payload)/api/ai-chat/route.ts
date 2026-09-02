@@ -9,6 +9,32 @@ const CONVERSATION_COLLECTION = 'ai-conversations' as any
 const MAX_STORED_MESSAGES = 200
 const MAX_MESSAGE_LENGTH = 8000
 const APP_TIME_ZONE = 'Asia/Manila'
+const MONTH_ALIASES: Record<string, number> = {
+  january: 1,
+  jan: 1,
+  february: 2,
+  feb: 2,
+  march: 3,
+  mar: 3,
+  april: 4,
+  apr: 4,
+  may: 5,
+  june: 6,
+  jun: 6,
+  july: 7,
+  jul: 7,
+  august: 8,
+  aug: 8,
+  september: 9,
+  sept: 9,
+  sep: 9,
+  october: 10,
+  oct: 10,
+  november: 11,
+  nov: 11,
+  december: 12,
+  dec: 12,
+}
 
 const sanitizeStoredMessages = (messages: any): FintraxChatMessage[] => {
   if (!Array.isArray(messages)) return []
@@ -45,6 +71,29 @@ const formatDate = (year: number, month: number, day: number) =>
 const getLastDayOfMonth = (year: number, month: number) =>
   new Date(Date.UTC(year, month, 0)).getUTCDate()
 
+const getNamedMonthScope = (
+  normalized: string,
+  currentYear: number,
+  currentMonth: number,
+  today: string,
+) => {
+  const match = normalized.match(
+    /\b(january|jan|february|feb|march|mar|april|apr|may|june|jun|july|jul|august|aug|september|sept|sep|october|oct|november|nov|december|dec)\b(?:\s+(20\d{2}))?/,
+  )
+  if (!match) return null
+
+  const targetMonth = MONTH_ALIASES[match[1]]
+  const explicitYear = match[2] ? Number(match[2]) : null
+  const targetYear = explicitYear ?? (targetMonth > currentMonth ? currentYear - 1 : currentYear)
+  const start = formatDate(targetYear, targetMonth, 1)
+  const isCurrentMonth = targetYear === currentYear && targetMonth === currentMonth
+  const end = isCurrentMonth
+    ? today
+    : formatDate(targetYear, targetMonth, getLastDayOfMonth(targetYear, targetMonth))
+
+  return `${start} through ${end}`
+}
+
 const addTemporalScope = (message: string) => {
   const normalized = message.toLowerCase()
   const { year, month, day } = getLocalDateParts()
@@ -62,11 +111,13 @@ const addTemporalScope = (message: string) => {
     scope = `${formatDate(year, 1, 1)} through ${today}`
   } else if (/\btoday\b/.test(normalized)) {
     scope = `${today} only`
+  } else {
+    scope = getNamedMonthScope(normalized, year, month, today)
   }
 
   if (!scope) return message
 
-  return `${message}\n\n[Fintrax internal date constraint: The user's requested period is ${scope}, based on timezone ${APP_TIME_ZONE}. For transaction, spending, income, expense, payment, or cash-flow analysis, use only records inside this period. Do not use an all-time financial overview to answer a period-specific question, and do not include transactions outside this period.]`
+  return `${message}\n\n[Fintrax internal date constraint: The user's requested period is ${scope}, based on timezone ${APP_TIME_ZONE}. For transaction, spending, income, expense, payment, or cash-flow analysis, use only records inside this period. Call get_transactions and/or get_spending_summary with this exact date range. Do not use an all-time financial overview to answer a period-specific question, and do not include transactions outside this period. Only say there are no transactions when the period-filtered transaction result is empty.]`
 }
 
 async function authenticateMember(request: NextRequest) {
