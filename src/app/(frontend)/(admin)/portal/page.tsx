@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import DashboardCard from '@/components/fintrax/dashboard/DashboardCard'
 import DashboardCharts from '@/components/fintrax/dashboard/DashboardCharts'
 import DashboardExpenseCard from '@/components/fintrax/dashboard/DashboardExpenseCard'
+import DashboardIncomeCard from '@/components/fintrax/dashboard/DashboardIncomeCard'
 import DashboardLists from '@/components/fintrax/dashboard/DashboardLists'
 import DashboardPeriodFilter from '@/components/fintrax/dashboard/DashboardPeriodFilter'
 import { formatAmount } from '@/helper/common.helper'
@@ -49,11 +50,10 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
   const selectedDate = monthDate(selectedPeriod)
   const selectedLabel = monthLabel(selectedPeriod)
   const selectedTransactions = transactions.filter((transaction) => transactionMonthKey(transaction.date) === selectedPeriod)
+  const incomeTransactions = selectedTransactions.filter((transaction) => transaction.type === 'income')
   const expenseTransactions = selectedTransactions.filter((transaction) => transaction.type === 'expense' || transaction.type === 'payment')
 
-  const income = selectedTransactions
-    .filter((transaction) => transaction.type === 'income')
-    .reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
+  const income = incomeTransactions.reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
   const expenses = expenseTransactions.reduce((sum, transaction) => sum + (transaction.amount ?? 0), 0)
   const balance = income - expenses
 
@@ -117,7 +117,7 @@ export default async function Dashboard({ searchParams }: DashboardProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
-        <DashboardCard label="Total Income" number={formatAmount(income)} helper={`Income recorded in ${selectedLabel}`} tone="income" />
+        <DashboardIncomeCard total={income} periodLabel={selectedLabel} transactions={incomeTransactions} />
         <DashboardExpenseCard total={expenses} periodLabel={selectedLabel} transactions={expenseTransactions} />
         <DashboardCard label="Monthly Balance" number={formatAmount(balance)} helper="Income less expenses" tone="balance" />
         <DashboardCard label="Upcoming Bills" number={`${upcomingBills.length} ${upcomingBills.length === 1 ? 'Bill' : 'Bills'}`} helper="Next bills requiring attention" tone="bills" />
