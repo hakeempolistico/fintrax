@@ -15,6 +15,7 @@ import AICaptureEndpoint from './endpoints/aicapture.endpoint'
 import { Bills } from './collections/Bills'
 import { Loans } from './collections/Loans'
 import { Transactions } from './collections/Transactions'
+import { AIConversations } from './collections/AIConversations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -41,7 +42,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Members, Accounts, Bills, Loans, Transactions],
+  collections: [Users, Media, Members, Accounts, Bills, Loans, Transactions, AIConversations],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

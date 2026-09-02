@@ -17,8 +17,8 @@ type CategoryPoint = {
 }
 
 type DashboardChartsProps =
-  | { type: 'monthly'; monthly: MonthlyPoint[] }
-  | { type: 'categories'; categories: CategoryPoint[] }
+  | { type: 'monthly'; monthly: MonthlyPoint[]; periodLabel: string }
+  | { type: 'categories'; categories: CategoryPoint[]; periodLabel: string }
 
 const peso = (value: number) => `₱${value.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`
 
@@ -43,9 +43,10 @@ export default function DashboardCharts(props: DashboardChartsProps) {
       <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
         <div className="mb-5">
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Income vs Expenses</h3>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Last 6 months</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">6 months ending {props.periodLabel}</p>
         </div>
         <ReactApexChart
+          key={`monthly-${props.periodLabel}`}
           type="area"
           height={280}
           options={options}
@@ -71,10 +72,11 @@ export default function DashboardCharts(props: DashboardChartsProps) {
     <div className="rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">Expenses by Category</h3>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This month</p>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{props.periodLabel}</p>
       </div>
       {props.categories.length ? (
         <ReactApexChart
+          key={`categories-${props.periodLabel}`}
           type="donut"
           height={280}
           options={options}
@@ -82,7 +84,7 @@ export default function DashboardCharts(props: DashboardChartsProps) {
         />
       ) : (
         <div className="flex h-[280px] items-center justify-center text-sm text-gray-500 dark:text-gray-400">
-          No expense transactions this month.
+          No expense transactions for {props.periodLabel}.
         </div>
       )}
     </div>

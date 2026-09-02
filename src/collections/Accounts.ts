@@ -1,3 +1,4 @@
+import { authenticatedMemberOrAdmin, forceMemberOwnership, memberOwnedAccess } from '@/access/memberOwnership'
 import type { CollectionConfig } from 'payload'
 
 export const Accounts: CollectionConfig = {
@@ -5,12 +6,19 @@ export const Accounts: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
   },
+  access: {
+    create: authenticatedMemberOrAdmin,
+    read: memberOwnedAccess,
+    update: memberOwnedAccess,
+    delete: memberOwnedAccess,
+  },
   fields: [
     {
       name: 'member',
       type: 'relationship',
       relationTo: 'members',
       required: true,
+      index: true,
     },
     {
       name: 'name',
@@ -32,22 +40,10 @@ export const Accounts: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        {
-          label: 'Bank Account',
-          value: 'bank',
-        },
-        {
-          label: 'Cash',
-          value: 'cash',
-        },
-        {
-          label: 'Credit Card',
-          value: 'credit-card',
-        },
-        {
-          label: 'E-Wallet',
-          value: 'e-wallet',
-        },
+        { label: 'Bank Account', value: 'bank' },
+        { label: 'Cash', value: 'cash' },
+        { label: 'Credit Card', value: 'credit-card' },
+        { label: 'E-Wallet', value: 'e-wallet' },
       ],
     },
     {
@@ -76,18 +72,13 @@ export const Accounts: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
+      forceMemberOwnership,
       async ({ data, originalDoc, req }) => {
-        if (!data.isDefault) {
-          return data
-        }
+        if (!data.isDefault) return data
 
         const memberValue = data.member ?? originalDoc?.member
-        const memberId =
-          typeof memberValue === 'object' && memberValue !== null ? memberValue.id : memberValue
-
-        if (!memberId) {
-          return data
-        }
+        const memberId = typeof memberValue === 'object' && memberValue !== null ? memberValue.id : memberValue
+        if (!memberId) return data
 
         const currentAccountId = originalDoc?.id
         const existingDefaults = await req.payload.find({
@@ -96,25 +87,9 @@ export const Accounts: CollectionConfig = {
           pagination: false,
           where: {
             and: [
-              {
-                member: {
-                  equals: memberId,
-                },
-              },
-              {
-                isDefault: {
-                  equals: true,
-                },
-              },
-              ...(currentAccountId
-                ? [
-                    {
-                      id: {
-                        not_equals: currentAccountId,
-                      },
-                    },
-                  ]
-                : []),
+              { member: { equals: memberId } },
+              { isDefault: { equals: true } },
+              ...(currentAccountId ? [{ id: { not_equals: currentAccountId } }] : []),
             ],
           },
         })
@@ -124,9 +99,7 @@ export const Accounts: CollectionConfig = {
             req.payload.update({
               collection: 'accounts',
               id: account.id,
-              data: {
-                isDefault: false,
-              },
+              data: { isDefault: false },
             }),
           ),
         )
