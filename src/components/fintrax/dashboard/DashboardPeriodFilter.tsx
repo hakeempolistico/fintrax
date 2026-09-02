@@ -26,6 +26,7 @@ export default function DashboardPeriodFilter({ value, options }: DashboardPerio
 
     startTransition(() => {
       router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+      router.refresh()
     })
   }
 
