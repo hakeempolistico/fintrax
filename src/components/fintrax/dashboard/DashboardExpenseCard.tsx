@@ -2,6 +2,7 @@
 
 import { ArrowUpRight, CircleDollarSign, ReceiptText, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { dateToReadable, formatAmount } from '@/helper/common.helper'
 import type { Transaction } from '@/payload-types'
 
@@ -37,27 +38,10 @@ export default function DashboardExpenseCard({ total, periodLabel, transactions 
     }
   }, [isOpen])
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="w-full rounded-2xl border border-gray-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-error-200 hover:shadow-sm focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/30"
-        aria-haspopup="dialog"
-      >
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Expenses</p>
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-error-100 text-error-600 dark:bg-error-500/15 dark:text-error-400">
-            <ArrowUpRight className="h-5 w-5" />
-          </div>
-        </div>
-        <p className="mt-4 truncate text-xl font-bold text-error-600 dark:text-error-400">{formatAmount(total)}</p>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Expenses and payments in {periodLabel} · Click to view</p>
-      </button>
-
-      {isOpen && (
+  const modal = isOpen && typeof document !== 'undefined'
+    ? createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-950/50 p-4 backdrop-blur-sm"
           role="presentation"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setIsOpen(false)
@@ -133,8 +117,30 @@ export default function DashboardExpenseCard({ total, periodLabel, transactions 
               )}
             </div>
           </div>
+        </div>,
+        document.body,
+      )
+    : null
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="w-full rounded-2xl border border-gray-200 bg-white p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-error-200 hover:shadow-sm focus:outline-none focus:ring-3 focus:ring-error-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:hover:border-error-500/30"
+        aria-haspopup="dialog"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Total Expenses</p>
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-error-100 text-error-600 dark:bg-error-500/15 dark:text-error-400">
+            <ArrowUpRight className="h-5 w-5" />
+          </div>
         </div>
-      )}
+        <p className="mt-4 truncate text-xl font-bold text-error-600 dark:text-error-400">{formatAmount(total)}</p>
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Expenses and payments in {periodLabel} · Click to view</p>
+      </button>
+
+      {modal}
     </>
   )
 }
