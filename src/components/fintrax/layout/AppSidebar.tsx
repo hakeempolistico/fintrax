@@ -25,19 +25,43 @@ const personalFinanceItems = [
   { icon: <LandmarkIcon />, name: 'Loans', path: '/portal/personal/loans' },
 ]
 
+const businessFinanceItems = [
+  { icon: <UserRoundIcon className="h-5 w-5" />, name: 'Clients', path: '/portal/business/clients' },
+]
+
+const isPathActive = (pathname: string, path: string) => pathname === path || pathname.startsWith(`${path}/`)
+
 export default function AppSidebar() {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar()
   const pathname = usePathname()
   const showBrandName = isExpanded || isHovered || isMobileOpen
-  const isPersonalFinanceActive = personalFinanceItems.some((item) => pathname === item.path)
+  const isPersonalFinanceActive = personalFinanceItems.some((item) => isPathActive(pathname, item.path))
+  const isBusinessFinanceActive = businessFinanceItems.some((item) => isPathActive(pathname, item.path))
   const [isPersonalFinanceOpen, setIsPersonalFinanceOpen] = useState(isPersonalFinanceActive)
-  const [isBusinessFinanceOpen, setIsBusinessFinanceOpen] = useState(false)
+  const [isBusinessFinanceOpen, setIsBusinessFinanceOpen] = useState(isBusinessFinanceActive)
 
   useEffect(() => {
     setIsPersonalFinanceOpen(isPersonalFinanceActive)
-  }, [isPersonalFinanceActive])
+    setIsBusinessFinanceOpen(isBusinessFinanceActive)
+  }, [isPersonalFinanceActive, isBusinessFinanceActive])
 
   const dashboardActive = pathname === '/portal'
+
+  const togglePersonalFinance = () => {
+    setIsPersonalFinanceOpen((open) => {
+      const next = !open
+      if (next) setIsBusinessFinanceOpen(false)
+      return next
+    })
+  }
+
+  const toggleBusinessFinance = () => {
+    setIsBusinessFinanceOpen((open) => {
+      const next = !open
+      if (next) setIsPersonalFinanceOpen(false)
+      return next
+    })
+  }
 
   return (
     <aside
@@ -93,7 +117,7 @@ export default function AppSidebar() {
           <li>
             <button
               type="button"
-              onClick={() => setIsPersonalFinanceOpen((open) => !open)}
+              onClick={togglePersonalFinance}
               className={`menu-item menu-item-inactive group w-full cursor-pointer ${!showBrandName ? 'lg:justify-center' : ''}`}
               aria-expanded={isPersonalFinanceOpen}
               aria-controls="personal-finance-menu"
@@ -121,7 +145,7 @@ export default function AppSidebar() {
                 <div className="min-h-0">
                   <ul className="ml-9 mt-2 space-y-1">
                     {personalFinanceItems.map((item) => {
-                      const active = pathname === item.path
+                      const active = isPathActive(pathname, item.path)
                       return (
                         <li key={item.name}>
                           <Link
@@ -145,7 +169,7 @@ export default function AppSidebar() {
           <li>
             <button
               type="button"
-              onClick={() => setIsBusinessFinanceOpen((open) => !open)}
+              onClick={toggleBusinessFinance}
               className={`menu-item menu-item-inactive group w-full cursor-pointer ${!showBrandName ? 'lg:justify-center' : ''}`}
               aria-expanded={isBusinessFinanceOpen}
               aria-controls="business-finance-menu"
@@ -172,14 +196,22 @@ export default function AppSidebar() {
               >
                 <div className="min-h-0">
                   <ul className="ml-9 mt-2 space-y-1">
-                    <li>
-                      <div className="menu-dropdown-item menu-dropdown-item-inactive cursor-default" aria-disabled="true">
-                        <span className="menu-item-icon-inactive">
-                          <UserRoundIcon className="h-5 w-5" />
-                        </span>
-                        <span>Client</span>
-                      </div>
-                    </li>
+                    {businessFinanceItems.map((item) => {
+                      const active = isPathActive(pathname, item.path)
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.path}
+                            className={`menu-dropdown-item ${active ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                          >
+                            <span className={active ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>
+                              {item.icon}
+                            </span>
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               </div>
