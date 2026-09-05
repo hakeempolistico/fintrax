@@ -1,5 +1,17 @@
 import { authenticatedMemberOrAdmin, forceMemberOwnership, memberOwnedAccess } from '@/access/memberOwnership'
-import type { CollectionConfig } from 'payload'
+import type { CollectionBeforeDeleteHook, CollectionConfig } from 'payload'
+
+const preventDeleteWithStockHistory: CollectionBeforeDeleteHook = async ({ id, req }) => {
+  const movements = await req.payload.find({
+    collection: 'stock-movements' as any,
+    limit: 1,
+    overrideAccess: true,
+    where: { material: { equals: id } },
+  })
+  if (movements.totalDocs > 0) {
+    throw new Error('This material has stock history and cannot be deleted. Mark it inactive instead.')
+  }
+}
 
 export const Materials: CollectionConfig = {
   slug: 'materials',
@@ -51,7 +63,7 @@ export const Materials: CollectionConfig = {
       defaultValue: 0,
       min: 0,
       admin: {
-        description: 'Starting/current unit cost. Future stock-in purchases can update this using weighted-average costing.',
+        description: 'Current weighted-average unit cost. Stock-In purchases update this automatically.',
       },
     },
     {
@@ -62,7 +74,7 @@ export const Materials: CollectionConfig = {
       defaultValue: 0,
       min: 0,
       admin: {
-        description: 'Starting stock balance. Future current stock will be calculated from this plus stock movements.',
+        description: 'Starting stock balance. Current stock is calculated from this plus stock movements.',
       },
     },
     {
@@ -91,7 +103,7 @@ export const Materials: CollectionConfig = {
         { label: 'Meter', value: 'm' },
       ],
       admin: {
-        description: 'Optional convenience for future Purchases / Stock-In.',
+        description: 'Used as the default unit when recording Purchases / Stock-In.',
       },
     },
     {
@@ -116,5 +128,6 @@ export const Materials: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [forceMemberOwnership],
+    beforeDelete: [preventDeleteWithStockHistory],
   },
 }
