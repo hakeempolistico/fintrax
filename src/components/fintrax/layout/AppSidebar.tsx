@@ -9,6 +9,7 @@ import {
   FileTextIcon,
   LandmarkIcon,
   LayoutDashboardIcon,
+  PackageIcon,
   UserRoundIcon,
   WalletCardsIcon,
 } from 'lucide-react'
@@ -27,6 +28,7 @@ const personalFinanceItems = [
 
 const businessFinanceItems = [
   { icon: <UserRoundIcon className="h-5 w-5" />, name: 'Clients', path: '/portal/business/clients' },
+  { icon: <PackageIcon className="h-5 w-5" />, name: 'Materials', path: '/portal/business/materials' },
 ]
 
 const isPathActive = (pathname: string, path: string) => pathname === path || pathname.startsWith(`${path}/`)
