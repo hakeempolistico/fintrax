@@ -1,24 +1,40 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useSidebar } from '@/context/SidebarContext'
-import { ArrowLeftRightIcon, FileTextIcon, LandmarkIcon } from 'lucide-react'
+import {
+  ArrowLeftRightIcon,
+  ChevronDownIcon,
+  FileTextIcon,
+  LandmarkIcon,
+  WalletCardsIcon,
+} from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { DollarLineIcon, GridIcon, HorizontaLDots } from '@/icons'
 
-const navItems = [
-  { icon: <GridIcon />, name: 'Dashboard', path: '/portal' },
+const personalFinanceItems = [
   { icon: <DollarLineIcon />, name: 'Accounts', path: '/portal/accounts' },
+  { icon: <ArrowLeftRightIcon />, name: 'Transactions', path: '/portal/transactions' },
   { icon: <FileTextIcon />, name: 'Bills', path: '/portal/bills' },
   { icon: <LandmarkIcon />, name: 'Loans', path: '/portal/loans' },
-  { icon: <ArrowLeftRightIcon />, name: 'Transactions', path: '/portal/transactions' },
 ]
 
 export default function AppSidebar() {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar()
   const pathname = usePathname()
   const showBrandName = isExpanded || isHovered || isMobileOpen
+  const isPersonalFinanceActive = personalFinanceItems.some((item) => pathname === item.path)
+  const [isPersonalFinanceOpen, setIsPersonalFinanceOpen] = useState(isPersonalFinanceActive)
+
+  useEffect(() => {
+    if (isPersonalFinanceActive) {
+      setIsPersonalFinanceOpen(true)
+    }
+  }, [isPersonalFinanceActive])
+
+  const dashboardActive = pathname === '/portal'
 
   return (
     <aside
@@ -27,22 +43,101 @@ export default function AppSidebar() {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className={`flex py-7 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}>
-        <Link href="/portal" className={`flex items-center rounded-2xl transition-all duration-200 ${showBrandName ? 'gap-3 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.03]' : 'justify-center'}`} aria-label="Fintrax dashboard">
+        <Link
+          href="/portal"
+          className={`flex items-center rounded-2xl transition-all duration-200 ${showBrandName ? 'gap-3 px-2 py-1.5 hover:bg-gray-50 dark:hover:bg-white/[0.03]' : 'justify-center'}`}
+          aria-label="Fintrax dashboard"
+        >
           <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 ring-1 ring-brand-100 dark:bg-brand-500/10 dark:ring-brand-500/20">
-            <Image src="/images/logo/logo-fintrax.png" alt="Fintrax logo" width={44} height={44} className="h-9 w-9 object-contain" priority />
+            <Image
+              src="/images/logo/logo-fintrax.png"
+              alt="Fintrax logo"
+              width={44}
+              height={44}
+              className="h-9 w-9 object-contain"
+              priority
+            />
           </div>
-          {showBrandName && <div className="flex h-11 items-center"><span className="text-[20px] font-extrabold tracking-tight text-slate-900 dark:text-white">FIN</span><span className="text-[20px] font-extrabold tracking-tight text-cyan-500">TRAX</span></div>}
+          {showBrandName && (
+            <div className="flex h-11 items-center">
+              <span className="text-[20px] font-extrabold tracking-tight text-slate-900 dark:text-white">FIN</span>
+              <span className="text-[20px] font-extrabold tracking-tight text-cyan-500">TRAX</span>
+            </div>
+          )}
         </Link>
       </div>
+
       <nav className="mb-6">
-        <h2 className={`mb-4 flex text-xs uppercase leading-5 text-gray-400 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}>
+        <h2
+          className={`mb-4 flex text-xs uppercase leading-5 text-gray-400 ${!isExpanded && !isHovered ? 'lg:justify-center' : 'justify-start'}`}
+        >
           {showBrandName ? 'Menu' : <HorizontaLDots />}
         </h2>
+
         <ul className="flex flex-col gap-4">
-          {navItems.map((nav) => {
-            const active = pathname === nav.path
-            return <li key={nav.name}><Link href={nav.path} className={`menu-item group ${active ? 'menu-item-active' : 'menu-item-inactive'} ${!showBrandName ? 'lg:justify-center' : ''}`}><span className={active ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>{nav.icon}</span>{showBrandName && <span className="menu-item-text">{nav.name}</span>}</Link></li>
-          })}
+          <li>
+            <Link
+              href="/portal"
+              className={`menu-item group ${dashboardActive ? 'menu-item-active' : 'menu-item-inactive'} ${!showBrandName ? 'lg:justify-center' : ''}`}
+            >
+              <span className={dashboardActive ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>
+                <GridIcon />
+              </span>
+              {showBrandName && <span className="menu-item-text">Dashboard</span>}
+            </Link>
+          </li>
+
+          <li>
+            <button
+              type="button"
+              onClick={() => setIsPersonalFinanceOpen((open) => !open)}
+              className={`menu-item group w-full cursor-pointer ${isPersonalFinanceActive ? 'menu-item-active' : 'menu-item-inactive'} ${!showBrandName ? 'lg:justify-center' : ''}`}
+              aria-expanded={isPersonalFinanceOpen}
+              aria-controls="personal-finance-menu"
+            >
+              <span className={isPersonalFinanceActive ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>
+                <WalletCardsIcon className="h-5 w-5" />
+              </span>
+              {showBrandName && (
+                <>
+                  <span className="menu-item-text">Personal Finance</span>
+                  <ChevronDownIcon
+                    className={`ml-auto h-5 w-5 transition-transform duration-200 ${isPersonalFinanceOpen ? 'rotate-180' : ''}`}
+                  />
+                </>
+              )}
+            </button>
+
+            {showBrandName && (
+              <div
+                id="personal-finance-menu"
+                className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                  isPersonalFinanceOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                }`}
+              >
+                <div className="min-h-0">
+                  <ul className="ml-9 mt-2 space-y-1">
+                    {personalFinanceItems.map((item) => {
+                      const active = pathname === item.path
+                      return (
+                        <li key={item.name}>
+                          <Link
+                            href={item.path}
+                            className={`menu-dropdown-item ${active ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                          >
+                            <span className={active ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>
+                              {item.icon}
+                            </span>
+                            <span>{item.name}</span>
+                          </Link>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </li>
         </ul>
       </nav>
     </aside>
