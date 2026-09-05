@@ -16,11 +16,11 @@ import { usePathname } from 'next/navigation'
 import { DollarLineIcon, GridIcon, HorizontaLDots } from '@/icons'
 
 const personalFinanceItems = [
-  { icon: <LayoutDashboardIcon className="h-5 w-5" />, name: 'Overview', path: '/portal/overview' },
-  { icon: <DollarLineIcon />, name: 'Accounts', path: '/portal/accounts' },
-  { icon: <ArrowLeftRightIcon />, name: 'Transactions', path: '/portal/transactions' },
-  { icon: <FileTextIcon />, name: 'Bills', path: '/portal/bills' },
-  { icon: <LandmarkIcon />, name: 'Loans', path: '/portal/loans' },
+  { icon: <LayoutDashboardIcon className="h-5 w-5" />, name: 'Overview', path: '/portal/personal/overview' },
+  { icon: <DollarLineIcon />, name: 'Accounts', path: '/portal/personal/accounts' },
+  { icon: <ArrowLeftRightIcon />, name: 'Transactions', path: '/portal/personal/transactions' },
+  { icon: <FileTextIcon />, name: 'Bills', path: '/portal/personal/bills' },
+  { icon: <LandmarkIcon />, name: 'Loans', path: '/portal/personal/loans' },
 ]
 
 export default function AppSidebar() {
