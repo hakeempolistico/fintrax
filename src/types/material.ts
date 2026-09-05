@@ -15,6 +15,7 @@ export type MaterialRecord = {
   baseUnit: MaterialBaseUnit
   costPerBaseUnit: number
   openingQuantity: number
+  currentQuantity?: number
   reorderLevel?: number | null
   purchaseUnit?: MaterialPurchaseUnit | null
   purchaseUnitSize?: number | null

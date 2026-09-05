@@ -18,17 +18,15 @@ import { Transactions } from './collections/Transactions'
 import { AIConversations } from './collections/AIConversations'
 import { Clients } from './collections/Clients'
 import { Materials } from './collections/Materials'
+import { Purchases } from './collections/Purchases'
+import { StockMovements } from './collections/StockMovements'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const synchronousImportExport = {
-  export: {
-    disableJobsQueue: true,
-  },
-  import: {
-    disableJobsQueue: true,
-  },
+  export: { disableJobsQueue: true },
+  import: { disableJobsQueue: true },
 } as const
 
 const blobCollections = {
@@ -40,19 +38,13 @@ const blobCollections = {
 export default buildConfig({
   admin: {
     user: Users.slug,
-    importMap: {
-      baseDir: path.resolve(dirname),
-    },
+    importMap: { baseDir: path.resolve(dirname) },
   },
-  collections: [Users, Media, Members, Accounts, Bills, Loans, Transactions, AIConversations, Clients, Materials],
+  collections: [Users, Media, Members, Accounts, Bills, Loans, Transactions, AIConversations, Clients, Materials, Purchases, StockMovements],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
-  typescript: {
-    outputFile: path.resolve(dirname, 'payload-types.ts'),
-  },
-  db: mongooseAdapter({
-    url: process.env.DATABASE_URL || '',
-  }),
+  typescript: { outputFile: path.resolve(dirname, 'payload-types.ts') },
+  db: mongooseAdapter({ url: process.env.DATABASE_URL || '' }),
   sharp,
   plugins: [
     importExportPlugin({
@@ -65,17 +57,11 @@ export default buildConfig({
       ],
       overrideExportCollection: ({ collection }) => ({
         ...collection,
-        admin: {
-          ...collection.admin,
-          group: 'Data Management',
-        },
+        admin: { ...collection.admin, group: 'Data Management' },
       }),
       overrideImportCollection: ({ collection }) => ({
         ...collection,
-        admin: {
-          ...collection.admin,
-          group: 'Data Management',
-        },
+        admin: { ...collection.admin, group: 'Data Management' },
       }),
     }),
     vercelBlobStorage({
