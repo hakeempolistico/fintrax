@@ -7,6 +7,7 @@ import {
   ChevronDownIcon,
   FileTextIcon,
   LandmarkIcon,
+  LayoutDashboardIcon,
   WalletCardsIcon,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -15,6 +16,7 @@ import { usePathname } from 'next/navigation'
 import { DollarLineIcon, GridIcon, HorizontaLDots } from '@/icons'
 
 const personalFinanceItems = [
+  { icon: <LayoutDashboardIcon className="h-5 w-5" />, name: 'Overview', path: '/portal/overview' },
   { icon: <DollarLineIcon />, name: 'Accounts', path: '/portal/accounts' },
   { icon: <ArrowLeftRightIcon />, name: 'Transactions', path: '/portal/transactions' },
   { icon: <FileTextIcon />, name: 'Bills', path: '/portal/bills' },
