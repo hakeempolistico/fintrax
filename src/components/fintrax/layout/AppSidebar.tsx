@@ -31,9 +31,7 @@ export default function AppSidebar() {
   const [isPersonalFinanceOpen, setIsPersonalFinanceOpen] = useState(isPersonalFinanceActive)
 
   useEffect(() => {
-    if (isPersonalFinanceActive) {
-      setIsPersonalFinanceOpen(true)
-    }
+    setIsPersonalFinanceOpen(isPersonalFinanceActive)
   }, [isPersonalFinanceActive])
 
   const dashboardActive = pathname === '/portal'
@@ -93,11 +91,11 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setIsPersonalFinanceOpen((open) => !open)}
-              className={`menu-item group w-full cursor-pointer ${isPersonalFinanceActive ? 'menu-item-active' : 'menu-item-inactive'} ${!showBrandName ? 'lg:justify-center' : ''}`}
+              className={`menu-item menu-item-inactive group w-full cursor-pointer ${!showBrandName ? 'lg:justify-center' : ''}`}
               aria-expanded={isPersonalFinanceOpen}
               aria-controls="personal-finance-menu"
             >
-              <span className={isPersonalFinanceActive ? 'menu-item-icon-active' : 'menu-item-icon-inactive'}>
+              <span className="menu-item-icon-inactive">
                 <WalletCardsIcon className="h-5 w-5" />
               </span>
               {showBrandName && (
