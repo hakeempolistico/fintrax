@@ -4,10 +4,12 @@ import { useEffect, useState } from 'react'
 import { useSidebar } from '@/context/SidebarContext'
 import {
   ArrowLeftRightIcon,
+  BriefcaseBusinessIcon,
   ChevronDownIcon,
   FileTextIcon,
   LandmarkIcon,
   LayoutDashboardIcon,
+  UserRoundIcon,
   WalletCardsIcon,
 } from 'lucide-react'
 import Image from 'next/image'
@@ -29,6 +31,7 @@ export default function AppSidebar() {
   const showBrandName = isExpanded || isHovered || isMobileOpen
   const isPersonalFinanceActive = personalFinanceItems.some((item) => pathname === item.path)
   const [isPersonalFinanceOpen, setIsPersonalFinanceOpen] = useState(isPersonalFinanceActive)
+  const [isBusinessFinanceOpen, setIsBusinessFinanceOpen] = useState(false)
 
   useEffect(() => {
     setIsPersonalFinanceOpen(isPersonalFinanceActive)
@@ -133,6 +136,50 @@ export default function AppSidebar() {
                         </li>
                       )
                     })}
+                  </ul>
+                </div>
+              </div>
+            )}
+          </li>
+
+          <li>
+            <button
+              type="button"
+              onClick={() => setIsBusinessFinanceOpen((open) => !open)}
+              className={`menu-item menu-item-inactive group w-full cursor-pointer ${!showBrandName ? 'lg:justify-center' : ''}`}
+              aria-expanded={isBusinessFinanceOpen}
+              aria-controls="business-finance-menu"
+            >
+              <span className="menu-item-icon-inactive">
+                <BriefcaseBusinessIcon className="h-5 w-5" />
+              </span>
+              {showBrandName && (
+                <>
+                  <span className="menu-item-text">Business Finance</span>
+                  <ChevronDownIcon
+                    className={`ml-auto h-5 w-5 transition-transform duration-200 ${isBusinessFinanceOpen ? 'rotate-180' : ''}`}
+                  />
+                </>
+              )}
+            </button>
+
+            {showBrandName && (
+              <div
+                id="business-finance-menu"
+                className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 ease-in-out ${
+                  isBusinessFinanceOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                }`}
+              >
+                <div className="min-h-0">
+                  <ul className="ml-9 mt-2 space-y-1">
+                    <li>
+                      <div className="menu-dropdown-item menu-dropdown-item-inactive cursor-default" aria-disabled="true">
+                        <span className="menu-item-icon-inactive">
+                          <UserRoundIcon className="h-5 w-5" />
+                        </span>
+                        <span>Client</span>
+                      </div>
+                    </li>
                   </ul>
                 </div>
               </div>
